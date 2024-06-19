@@ -16,6 +16,7 @@ public class OpenAPIConfig {
         myContact.setName("DataDynamics");
         myContact.setEmail("datadynamics@datdyn.com");
 
+
         Info information = new Info()
                 .title("Control Panel System APIs")
                 .version("1.0")
@@ -23,4 +24,6 @@ public class OpenAPIConfig {
                 .contact(myContact);
         return new OpenAPI().info(information);
     }
+
+
 }

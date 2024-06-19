@@ -1,5 +1,6 @@
 package com.ecommerce.domain.security.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,10 +29,10 @@ public class Token {
     private LocalDateTime expirationDate;
 
     @Column(name = "expired", columnDefinition = "boolean default true")
-    private Boolean expired;
+    private boolean expired;
 
     @Column(name = "revoke", columnDefinition = "boolean default false")
-    private Boolean revoke;
+    private boolean revoke;
 
     @Column(name = "refresh_token")
     private String refreshToken;
@@ -39,6 +40,13 @@ public class Token {
     @Column(name = "refresh_expiration_date")
     private LocalDateTime refreshExpirationDate;
 
-    @Column(name = "is_mobile", columnDefinition = "boolean default true")
-    private Boolean isMobile;
+    @Column(name = "is_mobile")
+    private boolean isMobile;
+    //true = mobile
+    //false = non mobile
+
+    @ManyToOne
+    @JoinColumn(name = "member_id", referencedColumnName = "member_id")
+    @JsonIgnore
+    private Member member;
 }

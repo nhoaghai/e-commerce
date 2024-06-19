@@ -57,15 +57,15 @@ public class Member {
     private String avatarUrl;
 
     @Column(name = "is_active", columnDefinition = "boolean default true")
-    private Boolean isActive;
+    private boolean isActive;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Address> addressList;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "member_role",
-                joinColumns = @JoinColumn(name = "member_id"),
-                inverseJoinColumns = @JoinColumn(name = "role_id"))
+            joinColumns = @JoinColumn(name = "member_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
@@ -79,4 +79,14 @@ public class Member {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Order> order;
+
+    @OneToMany(mappedBy = "member")
+    private List<Token> tokens;
+
+    @Transient
+    private String fullName;
+
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
 }

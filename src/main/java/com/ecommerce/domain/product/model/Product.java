@@ -55,6 +55,9 @@ public class Product {
     @Column(name = "update_at")
     private LocalDateTime update_at;
 
+    @Column(name = "is_active")
+    private boolean isActive;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", referencedColumnName = "category_id")
     @JsonIgnoreProperties({"categoryName", "description"})
