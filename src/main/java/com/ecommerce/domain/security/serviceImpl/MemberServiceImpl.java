@@ -1,6 +1,7 @@
 package com.ecommerce.domain.security.serviceImpl;
 
 import com.ecommerce.domain.security.dto.request.ChangePasswordRequest;
+import com.ecommerce.domain.security.dto.response.MemberInfoResponse;
 import com.ecommerce.domain.security.exception.MemberException;
 import com.ecommerce.domain.security.jwt.JwtProvider;
 import com.ecommerce.domain.security.model.Member;
@@ -9,6 +10,8 @@ import com.ecommerce.domain.security.repository.MemberRepository;
 import com.ecommerce.domain.security.repository.TokenRepository;
 import com.ecommerce.domain.security.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,10 +24,26 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final JwtProvider jwtProvider;
     private final TokenRepository tokenRepository;
+    private final ModelMapper modelMapper;
 
     @Override
-    public Member findById(String userId) {
-        return memberRepository.findById(userId).orElseThrow(() -> MemberException.notFound("Can not found member with id!"));
+    public MemberInfoResponse findById() {
+        UserDetailImpl memberDetail = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Member member = memberRepository.findByMemberId(memberDetail.getId());
+        Token memberToken = tokenRepository.findByMemberMemberId(memberDetail.getId());
+
+        return MemberInfoResponse.builder()
+                .id(member.getMemberId())
+                .email(member.getMemberId())
+                .phoneNumber(member.getPhoneNumber())
+                .fullName(member.getFullName())
+                .accessToken(memberToken.getTokenValue())
+                .refreshToken(memberToken.getRefreshToken())
+                .roles(member.getRoles().stream().map(role -> role.getRoleName().name()).toList())
+                .expiryDate(memberToken.getExpirationDate())
+                .avatarUrl(member.getAvatarUrl())
+                .tokenType(memberToken.getTokenType())
+                .build();
     }
 
     @Override

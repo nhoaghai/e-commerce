@@ -55,12 +55,15 @@ public class WebSecurityConfig {
                 "/v3/api-docs/**", "/swagger-resources", "/swagger-resources/**", "/configuration/ui",
                 "/configuration/security", "/swagger-ui/**", "/webjars/**", "/swagger-ui.html", "/api/auth/**",
                 "/api/test/**", "/authenticate"};
+
+        String[] permitAllUrl = {"/api/v3/products/**", "/api/v3/categories/**"};
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling((exception -> exception.authenticationEntryPoint(unauthorizedHandler)))
                 .sessionManagement((session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(swaggerUrl).permitAll()
                         .requestMatchers("/api/v3/auth/**").permitAll()
+                        .requestMatchers(permitAllUrl).permitAll()
                         .requestMatchers("/api/v3/member/**").hasAnyRole("MEMBER", "SELLER","ADMIN")
                         .requestMatchers("/api/v3/seller/**").hasAnyRole("SELLER", "ADMIN")
                         .requestMatchers("/api/v3/admin/**").hasRole("ADMIN")
