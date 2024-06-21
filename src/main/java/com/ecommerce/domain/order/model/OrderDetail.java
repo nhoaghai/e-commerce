@@ -20,23 +20,8 @@ public class OrderDetail {
     @EmbeddedId
     private OrderDetailId orderDetailId;
 
-    @Column(name = "note")
-    private String note;
-
-    @Column(name = "receive_name")
-    private String receiveName;
-
-    @Column(name = "receive_address")
-    private String receiveAddress;
-
-    @Column(name = "receive_phone", columnDefinition = "varchar(15)")
-    private String receivePhone;
-
-    @Column(name = "create_at")
-    private LocalDateTime createAt;
-
-    @Column(name = "receive_at")
-    private LocalDateTime receiveAt;
+    @Column(name = "product_quantity")
+    private Integer productQuantity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("orderId")

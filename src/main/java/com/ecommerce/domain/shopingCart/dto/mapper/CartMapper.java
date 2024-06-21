@@ -5,7 +5,7 @@ import com.ecommerce.domain.product.model.Product;
 import com.ecommerce.domain.product.repository.ProductRepository;
 import com.ecommerce.domain.security.model.Member;
 import com.ecommerce.domain.security.repository.MemberRepository;
-import com.ecommerce.domain.security.serviceImpl.UserDetailImpl;
+import com.ecommerce.domain.security.serviceImpl.jwtService.UserDetailImpl;
 import com.ecommerce.domain.shopingCart.dto.request.CartRequest;
 import com.ecommerce.domain.shopingCart.dto.response.CartResponse;
 import com.ecommerce.domain.shopingCart.model.ShoppingCart;

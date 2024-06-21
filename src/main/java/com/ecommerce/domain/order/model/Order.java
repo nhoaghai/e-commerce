@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -28,6 +29,24 @@ public class Order {
 
     @Column(name = "total_price", precision = 10, scale = 3)
     private BigDecimal totalPrice;
+
+    @Column(name = "note")
+    private String note;
+
+    @Column(name = "receive_name")
+    private String receiveName;
+
+    @Column(name = "receive_address")
+    private String receiveAddress;
+
+    @Column(name = "receive_phone", columnDefinition = "varchar(15)")
+    private String receivePhone;
+
+    @Column(name = "create_at")
+    private LocalDateTime createAt;
+
+    @Column(name = "receive_at")
+    private LocalDateTime receiveAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

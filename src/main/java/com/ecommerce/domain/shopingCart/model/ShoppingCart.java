@@ -25,12 +25,12 @@ public class ShoppingCart {
     @Column(name = "product_quantity", columnDefinition = "int default 1")
     private Integer productQuantity;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "member_id", referencedColumnName = "member_id")
     @JsonIgnore
     private Member member;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id", referencedColumnName = "product_id")
     @JsonIgnore
     private Product product;
