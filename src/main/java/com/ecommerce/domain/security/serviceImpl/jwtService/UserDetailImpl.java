@@ -1,4 +1,4 @@
-package com.ecommerce.domain.security.serviceImpl;
+package com.ecommerce.domain.security.serviceImpl.jwtService;
 
 import com.ecommerce.domain.security.model.Member;
 import lombok.*;

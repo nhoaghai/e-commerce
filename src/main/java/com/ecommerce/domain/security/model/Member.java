@@ -53,6 +53,9 @@ public class Member {
     @Column(name = "last_name")
     private String lastName;
 
+    @Column(name = "gender")
+    private boolean gender;
+
     @Column(name = "avatar_url")
     private String avatarUrl;
 
