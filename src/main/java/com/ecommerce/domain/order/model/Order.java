@@ -52,7 +52,7 @@ public class Order {
     @Column(name = "status")
     private OrderStatus orderStatus;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "member_id", referencedColumnName = "member_id")
     @JsonIgnore
     private Member member;

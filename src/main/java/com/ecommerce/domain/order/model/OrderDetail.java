@@ -23,12 +23,12 @@ public class OrderDetail {
     @Column(name = "product_quantity")
     private Integer productQuantity;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("orderId")
     @JsonIgnore
     private Order order;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("productId")
     @JsonIgnore
     private Product product;

@@ -6,14 +6,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
+import java.util.ArrayList;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderRequest {
-    private List<CheckoutRequest> checkoutRequests;
+    private ArrayList<CheckoutRequest> checkoutRequests;
     private String note;
     private String receiveAddress;
     private String receiveName;

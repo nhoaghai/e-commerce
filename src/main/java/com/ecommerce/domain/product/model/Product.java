@@ -58,7 +58,7 @@ public class Product {
     @Column(name = "is_active")
     private boolean isActive;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", referencedColumnName = "category_id")
     @JsonIgnoreProperties({"categoryName", "description"})
     private Category category;
@@ -69,7 +69,7 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<WishList> wishLists;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "seller_id", referencedColumnName = "member_id")
     @JsonIgnoreProperties("shopName")
     private Seller seller;
