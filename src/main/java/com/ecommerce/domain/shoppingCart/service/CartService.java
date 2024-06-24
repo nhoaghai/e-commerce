@@ -14,4 +14,6 @@ public interface CartService {
     CartResponse changeProductNumberInCart(CartRequest cartRequest);
 
     MessageResponse deleteProductInCart(CartRequest cartRequest);
+
+    MessageResponse clearAllProductsInCart();
 }

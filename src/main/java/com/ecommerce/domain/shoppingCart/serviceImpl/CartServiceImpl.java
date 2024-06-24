@@ -92,6 +92,15 @@ public class CartServiceImpl implements CartService {
                 .build();
     }
 
+    @Override
+    public MessageResponse clearAllProductsInCart() {
+        cartRepository.deleteAll();
+        return MessageResponse.builder()
+                .message("Clear all products in cart successfully")
+                .httpStatus(HttpStatus.OK)
+                .build();
+    }
+
 
     public void errorHandler(ShoppingCart cart, CartRequest cartRequest) {
         if(cart.getProduct() == null || cart.getMember() == null) {

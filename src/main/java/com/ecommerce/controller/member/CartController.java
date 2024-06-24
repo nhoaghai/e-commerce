@@ -43,6 +43,11 @@ public class CartController {
         return ResponseEntity.ok(cartService.deleteProductInCart(cartRequest));
     }
 
+    @DeleteMapping("/clear")
+    public ResponseEntity<MessageResponse> clearAllProductsInCart() {
+        return ResponseEntity.ok(cartService.clearAllProductsInCart());
+    }
+
     @PostMapping("/checkout")
     public ResponseEntity<OrderResponse> checkout(@RequestBody OrderRequest orderRequest){
         return ResponseEntity.ok(orderService.checkout(orderRequest));
