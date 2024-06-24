@@ -1,4 +1,4 @@
-package com.ecommerce.domain.shopingCart.dto.request;
+package com.ecommerce.domain.shoppingCart.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

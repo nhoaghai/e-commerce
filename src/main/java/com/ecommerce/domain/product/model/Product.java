@@ -1,9 +1,8 @@
 package com.ecommerce.domain.product.model;
 
 import com.ecommerce.domain.member.model.Seller;
-import com.ecommerce.domain.shopingCart.model.ShoppingCart;
-import com.ecommerce.domain.shopingCart.model.WishList;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.ecommerce.domain.shoppingCart.model.ShoppingCart;
+import com.ecommerce.domain.shoppingCart.model.WishList;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

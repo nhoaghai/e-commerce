@@ -1,4 +1,4 @@
-package com.ecommerce.domain.shopingCart.dto.mapper;
+package com.ecommerce.domain.shoppingCart.dto.mapper;
 
 import com.ecommerce.common.exception.DomainException;
 import com.ecommerce.domain.product.model.Product;
@@ -6,12 +6,10 @@ import com.ecommerce.domain.product.repository.ProductRepository;
 import com.ecommerce.domain.security.model.Member;
 import com.ecommerce.domain.security.repository.MemberRepository;
 import com.ecommerce.domain.security.serviceImpl.jwtService.UserDetailImpl;
-import com.ecommerce.domain.shopingCart.dto.request.CartRequest;
-import com.ecommerce.domain.shopingCart.dto.response.CartResponse;
-import com.ecommerce.domain.shopingCart.model.ShoppingCart;
-import lombok.AllArgsConstructor;
+import com.ecommerce.domain.shoppingCart.dto.request.CartRequest;
+import com.ecommerce.domain.shoppingCart.dto.response.CartResponse;
+import com.ecommerce.domain.shoppingCart.model.ShoppingCart;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 

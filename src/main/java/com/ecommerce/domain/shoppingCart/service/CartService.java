@@ -1,10 +1,8 @@
-package com.ecommerce.domain.shopingCart.service;
+package com.ecommerce.domain.shoppingCart.service;
 
 import com.ecommerce.common.util.MessageResponse;
-import com.ecommerce.common.util.PageResponseDto;
-import com.ecommerce.domain.shopingCart.dto.request.CartRequest;
-import com.ecommerce.domain.shopingCart.dto.response.CartResponse;
-import org.springframework.data.domain.Pageable;
+import com.ecommerce.domain.shoppingCart.dto.request.CartRequest;
+import com.ecommerce.domain.shoppingCart.dto.response.CartResponse;
 
 import java.util.List;
 

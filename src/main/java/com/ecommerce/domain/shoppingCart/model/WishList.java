@@ -1,4 +1,4 @@
-package com.ecommerce.domain.shopingCart.model;
+package com.ecommerce.domain.shoppingCart.model;
 
 import com.ecommerce.domain.product.model.Product;
 import com.ecommerce.domain.security.model.Member;
@@ -14,23 +14,20 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "shopping_cart")
-public class ShoppingCart {
+@Table(name = "wish_list")
+public class WishList {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "shopping_cart_id")
-    private Integer shoppingCartId;
+    @Column(name = "wish_list_id")
+    private Integer wishListId;
 
-    @Column(name = "product_quantity", columnDefinition = "int default 1")
-    private Integer productQuantity;
-
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", referencedColumnName = "member_id")
     @JsonIgnore
     private Member member;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", referencedColumnName = "product_id")
     @JsonIgnore
     private Product product;

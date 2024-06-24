@@ -1,14 +1,14 @@
-package com.ecommerce.domain.shopingCart.serviceImpl;
+package com.ecommerce.domain.shoppingCart.serviceImpl;
 
 import com.ecommerce.common.util.MessageResponse;
 import com.ecommerce.domain.security.serviceImpl.jwtService.UserDetailImpl;
-import com.ecommerce.domain.shopingCart.dto.mapper.CartMapper;
-import com.ecommerce.domain.shopingCart.dto.request.CartRequest;
-import com.ecommerce.domain.shopingCart.dto.response.CartResponse;
-import com.ecommerce.domain.shopingCart.exception.CartException;
-import com.ecommerce.domain.shopingCart.model.ShoppingCart;
-import com.ecommerce.domain.shopingCart.repository.CartRepository;
-import com.ecommerce.domain.shopingCart.service.CartService;
+import com.ecommerce.domain.shoppingCart.dto.mapper.CartMapper;
+import com.ecommerce.domain.shoppingCart.dto.request.CartRequest;
+import com.ecommerce.domain.shoppingCart.dto.response.CartResponse;
+import com.ecommerce.domain.shoppingCart.exception.CartException;
+import com.ecommerce.domain.shoppingCart.model.ShoppingCart;
+import com.ecommerce.domain.shoppingCart.repository.CartRepository;
+import com.ecommerce.domain.shoppingCart.service.CartService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;

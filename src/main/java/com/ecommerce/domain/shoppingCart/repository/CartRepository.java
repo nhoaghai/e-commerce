@@ -1,8 +1,6 @@
-package com.ecommerce.domain.shopingCart.repository;
+package com.ecommerce.domain.shoppingCart.repository;
 
-import com.ecommerce.domain.product.model.Product;
-import com.ecommerce.domain.shopingCart.model.ShoppingCart;
-import org.springframework.data.domain.Pageable;
+import com.ecommerce.domain.shoppingCart.model.ShoppingCart;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

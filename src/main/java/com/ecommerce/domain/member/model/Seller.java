@@ -25,6 +25,12 @@ public class Seller {
     @Column(name = "shop_name")
     private String shopName;
 
+    @Column(name = "email")
+    private String email;
+
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "member_id")
     @MapsId

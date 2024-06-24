@@ -1,4 +1,4 @@
-package com.ecommerce.domain.shopingCart.exception;
+package com.ecommerce.domain.shoppingCart.exception;
 
 import com.ecommerce.common.exception.DomainException;
 

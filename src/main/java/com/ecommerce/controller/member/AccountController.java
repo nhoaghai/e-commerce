@@ -1,18 +1,16 @@
 package com.ecommerce.controller.member;
 
 import com.ecommerce.common.util.MessageResponse;
+import com.ecommerce.domain.member.serviceImpl.AddressServiceImpl;
 import com.ecommerce.domain.security.dto.request.AccountRequest;
-import com.ecommerce.domain.security.dto.request.ChangeAddressRequest;
+import com.ecommerce.domain.member.dto.request.AddressRequest;
 import com.ecommerce.domain.security.dto.request.ChangeAvatarRequest;
 import com.ecommerce.domain.security.dto.request.ChangePasswordRequest;
 import com.ecommerce.domain.security.dto.response.AccountResponse;
-import com.ecommerce.domain.security.dto.response.AddressResponse;
-import com.ecommerce.domain.security.dto.response.MemberInfoResponse;
+import com.ecommerce.domain.member.dto.response.AddressResponse;
 import com.ecommerce.domain.security.serviceImpl.MemberServiceImpl;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +22,7 @@ import java.util.List;
 @SecurityRequirement(name = "Bearer Authentication")
 public class AccountController {
     private final MemberServiceImpl memberService;
-
+    private final AddressServiceImpl addressService;
 
     @GetMapping("/profile")
     public ResponseEntity<AccountResponse> getMemberInfo() {
@@ -42,8 +40,8 @@ public class AccountController {
     }
 
     @PutMapping("/changeAddress/{addressId}")
-    public ResponseEntity<List<AddressResponse>> updateAddress(@RequestBody ChangeAddressRequest changeAddressRequest, @PathVariable Long addressId) {
-        return ResponseEntity.ok(memberService.changeAddress(changeAddressRequest, addressId));
+    public ResponseEntity<List<AddressResponse>> updateAddress(@RequestBody AddressRequest addressRequest, @PathVariable Long addressId) {
+        return ResponseEntity.ok(addressService.changeAddress(addressRequest, addressId));
     }
 
     @PutMapping("/changePassword")

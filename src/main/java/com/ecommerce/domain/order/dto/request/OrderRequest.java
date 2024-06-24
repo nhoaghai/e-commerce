@@ -1,6 +1,6 @@
 package com.ecommerce.domain.order.dto.request;
 
-import com.ecommerce.domain.shopingCart.dto.request.CheckoutRequest;
+import com.ecommerce.domain.shoppingCart.dto.request.CheckoutRequest;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

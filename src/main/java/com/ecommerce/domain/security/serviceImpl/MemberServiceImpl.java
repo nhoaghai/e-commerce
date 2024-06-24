@@ -5,11 +5,11 @@ import com.ecommerce.common.util.UploadService;
 import com.ecommerce.domain.member.model.Address;
 import com.ecommerce.domain.member.repository.AddressRepository;
 import com.ecommerce.domain.security.dto.request.AccountRequest;
-import com.ecommerce.domain.security.dto.request.ChangeAddressRequest;
+import com.ecommerce.domain.member.dto.request.AddressRequest;
 import com.ecommerce.domain.security.dto.request.ChangeAvatarRequest;
 import com.ecommerce.domain.security.dto.request.ChangePasswordRequest;
 import com.ecommerce.domain.security.dto.response.AccountResponse;
-import com.ecommerce.domain.security.dto.response.AddressResponse;
+import com.ecommerce.domain.member.dto.response.AddressResponse;
 import com.ecommerce.domain.security.exception.MemberException;
 import com.ecommerce.domain.security.jwt.JwtProvider;
 import com.ecommerce.domain.security.model.Member;
@@ -117,21 +117,6 @@ public class MemberServiceImpl implements MemberService {
                 .httpStatus(HttpStatus.OK)
                 .message("Change avatar successfully!")
                 .build();
-    }
-
-    @Override
-    public List<AddressResponse> changeAddress(ChangeAddressRequest changeAddressRequest, Long addressId) {
-        UserDetailImpl memberDetail = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Member member = memberRepository.findByMemberId(memberDetail.getId());
-        Address address = addressRepository.findByMemberMemberIdAndAddressId(memberDetail.getId(), addressId);
-        address.setFullAddress(changeAddressRequest.getFullAddress());
-        address.setPhoneNumber(changeAddressRequest.getPhoneNumber());
-        address.setReceiveName(changeAddressRequest.getReceiveName());
-        addressRepository.save(address);
-        member.setUpdateAt(LocalDateTime.now());
-        return addressRepository.findByMemberMemberId(memberDetail.getId()).stream()
-                .map(add -> modelMapper.map(add, AddressResponse.class))
-                .toList();
     }
 
     @Override
