@@ -23,22 +23,22 @@ public class CartController {
     private final CartServiceImpl cartService;
     private final OrderServiceImpl orderService;
 
-    @GetMapping
-    public ResponseEntity<List<CartResponse>> getAllCart(Pageable pageable){
+    @GetMapping("/list")
+    public ResponseEntity<List<CartResponse>> findAllCart(Pageable pageable){
         return ResponseEntity.ok(cartService.findAllCart());
     }
 
-    @PostMapping
-    public ResponseEntity<CartResponse> addNewProductToCart(@RequestBody CartRequest cartRequest) {
+    @PostMapping("/add")
+    public ResponseEntity<CartResponse> addNewProductIntoCart(@RequestBody CartRequest cartRequest) {
         return ResponseEntity.ok(cartService.addNewProductIntoCart(cartRequest));
     }
 
-    @PutMapping("/add")
+    @PutMapping("/{cartid}")
     public ResponseEntity<CartResponse> changeProductNumberInCart(@RequestBody CartRequest cartRequest) {
         return ResponseEntity.ok(cartService.changeProductNumberInCart(cartRequest));
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping("/{cartid}")
     public ResponseEntity<MessageResponse> deleteProductInCart(@RequestBody CartRequest cartRequest) {
         return ResponseEntity.ok(cartService.deleteProductInCart(cartRequest));
     }
