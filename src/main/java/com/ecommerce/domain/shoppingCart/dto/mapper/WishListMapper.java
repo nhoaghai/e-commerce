@@ -21,6 +21,7 @@ public class WishListMapper {
     // Out: Entity -> DTO
     public WishListResponse wishListMappingToResponse(WishList wishList) {
         WishListResponse response = new WishListResponse();
+        response.setWishListId(wishList.getWishListId());
         response.setProductId(wishList.getProduct().getProductId());
         response.setProductName(wishList.getProduct().getProductName());
         return response;

@@ -8,6 +8,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 public class WishListResponse {
+    private Integer wishListId;
     private Long productId;
     private String productName;
 }
