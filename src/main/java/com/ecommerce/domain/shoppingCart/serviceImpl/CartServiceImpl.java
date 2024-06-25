@@ -1,5 +1,6 @@
 package com.ecommerce.domain.shoppingCart.serviceImpl;
 
+import com.ecommerce.common.exception.DomainException;
 import com.ecommerce.common.util.MessageResponse;
 import com.ecommerce.domain.security.serviceImpl.jwtService.UserDetailImpl;
 import com.ecommerce.domain.shoppingCart.dto.mapper.CartMapper;
@@ -16,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -24,6 +26,7 @@ public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
     private final CartMapper cartMapper;
+
 
     @Override
     public List<CartResponse> findAllCart() {
@@ -42,6 +45,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public CartResponse addNewProductIntoCart(CartRequest cartRequest) {
+        checkValidUser(cartRequest.getMemberId());
         ShoppingCart cart = cartRepository.findFirstByProductProductId(cartRequest.getProductId());
         if(cart == null) {
             cart = cartMapper.cartRequestMappingToCart(cartRequest);
@@ -54,14 +58,15 @@ public class CartServiceImpl implements CartService {
             if(cart.getProductQuantity() > 0) {
                 cartRepository.save(cart);
             } else {
-                deleteProductInCart(cartRequest);
+                deleteProductInCart(cart.getShoppingCartId());
             }
         }
         return cartMapper.cartMappingToResponse(cart);
     }
 
     @Override
-    public CartResponse changeProductNumberInCart(CartRequest cartRequest) {
+    public CartResponse changeProductQuantityInCart(CartRequest cartRequest) {
+        checkValidUser(cartRequest.getMemberId());
         ShoppingCart cart = cartRepository.findFirstByProductProductId(cartRequest.getProductId());
         if(cart != null) {
             errorHandler(cart, cartRequest);
@@ -70,7 +75,7 @@ public class CartServiceImpl implements CartService {
             if(cart.getProductQuantity() > 0) {
                 cartRepository.save(cart);
             } else {
-                deleteProductInCart(cartRequest);
+                deleteProductInCart(cart.getShoppingCartId());
             }
         } else {
             throw CartException.notFound("Product not found in your cart");
@@ -79,13 +84,10 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public MessageResponse deleteProductInCart(CartRequest cartRequest) {
-        ShoppingCart cart = cartRepository.findFirstByProductProductId(cartRequest.getProductId());
-        if(cart == null) {
-            throw CartException.notFound("No instance of this product in your cart");
-        } else {
-            cartRepository.delete(cart);
-        }
+    public MessageResponse deleteProductInCart(Integer cartId) {
+        ShoppingCart cart = cartRepository.findById(Long.valueOf(cartId)).orElseThrow();
+        checkValidUser(cart.getMember().getMemberId());
+        cartRepository.delete(cart);
         return MessageResponse.builder()
                 .message("Delete product in cart successfully")
                 .httpStatus(HttpStatus.OK)
@@ -101,7 +103,6 @@ public class CartServiceImpl implements CartService {
                 .build();
     }
 
-
     public void errorHandler(ShoppingCart cart, CartRequest cartRequest) {
         if(cart.getProduct() == null || cart.getMember() == null) {
             throw CartException.notFound("Product or Member is null");
@@ -110,5 +111,12 @@ public class CartServiceImpl implements CartService {
             throw CartException.badRequest("Quantity must be a positive integer");
         }
     }
+    public void checkValidUser(String memberId) {
+        UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(!Objects.equals(memberId, userDetails.getId())) {
+            throw new DomainException("Cannot find this order in your account, please retry");
+        }
+    }
+
 
 }

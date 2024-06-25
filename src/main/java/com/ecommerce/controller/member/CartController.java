@@ -9,7 +9,6 @@ import com.ecommerce.domain.shoppingCart.dto.response.CartResponse;
 import com.ecommerce.domain.shoppingCart.serviceImpl.CartServiceImpl;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +23,7 @@ public class CartController {
     private final OrderServiceImpl orderService;
 
     @GetMapping("/list")
-    public ResponseEntity<List<CartResponse>> findAllCart(Pageable pageable){
+    public ResponseEntity<List<CartResponse>> findAllCart(){
         return ResponseEntity.ok(cartService.findAllCart());
     }
 
@@ -33,14 +32,14 @@ public class CartController {
         return ResponseEntity.ok(cartService.addNewProductIntoCart(cartRequest));
     }
 
-    @PutMapping("/{cartid}")
-    public ResponseEntity<CartResponse> changeProductNumberInCart(@RequestBody CartRequest cartRequest) {
-        return ResponseEntity.ok(cartService.changeProductNumberInCart(cartRequest));
+    @PutMapping("/change-quantity")
+    public ResponseEntity<CartResponse> changeProductQuantityInCart(@RequestBody CartRequest cartRequest) {
+        return ResponseEntity.ok(cartService.changeProductQuantityInCart(cartRequest));
     }
 
-    @DeleteMapping("/{cartid}")
-    public ResponseEntity<MessageResponse> deleteProductInCart(@RequestBody CartRequest cartRequest) {
-        return ResponseEntity.ok(cartService.deleteProductInCart(cartRequest));
+    @DeleteMapping("/{cartId}")
+    public ResponseEntity<MessageResponse> deleteProductInCart(@PathVariable Integer cartId) {
+        return ResponseEntity.ok(cartService.deleteProductInCart(cartId));
     }
 
     @DeleteMapping("/clear")
