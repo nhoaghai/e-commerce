@@ -18,6 +18,7 @@ import com.ecommerce.domain.security.serviceImpl.jwtService.UserDetailImpl;
 import com.ecommerce.domain.shoppingCart.dto.request.CheckoutRequest;
 import com.ecommerce.domain.shoppingCart.model.ShoppingCart;
 import com.ecommerce.domain.shoppingCart.repository.CartRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -41,6 +42,7 @@ public class OrderServiceImpl implements OrderService {
     private final MemberRepository memberRepository;
 
     @Override
+    @Transactional
     public OrderResponse checkout(OrderRequest orderRequest) {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -58,21 +60,33 @@ public class OrderServiceImpl implements OrderService {
         order.setTotalPrice(BigDecimal.valueOf(1));
         ArrayList<CheckoutRequest> checkoutRequest = orderRequest.getCheckoutRequests();
         for (CheckoutRequest request : checkoutRequest) {
-            OrderDetail orderDetail = new OrderDetail();
-            orderDetail.setProductQuantity(request.getProductQuantity());
             ShoppingCart cart = cartRepository.findById(request.getShoppingCartId())
-                    .orElseThrow(() -> DomainException.notFound("Not found cart with that id!"));
+                    .orElseThrow(() -> DomainException.notFound("Cannot found cart with that id!"));
+            if(!Objects.equals(cart.getMember().getMemberId(), userDetails.getId())) {
+                throw new DomainException("Cannot found cart with that id!");
+            };
+
             Product product = productRepository.findByProductId(cart.getProduct().getProductId());
 
+            OrderDetail orderDetail = new OrderDetail();
+            orderDetail.setProductQuantity(request.getProductQuantity());
             orderDetail.setProduct(product);
             OrderDetailId orderDetailId = new OrderDetailId(product.getProductId(), order.getOrderId());
             orderDetail.setOrder(order);
             orderDetail.setOrderDetailId(orderDetailId);
             orderDetailRepository.save(orderDetail);
+
             order.setTotalPrice(product.getUnitPrice()
                     .multiply(BigDecimal.valueOf(request.getProductQuantity()))
                     .multiply(BigDecimal.valueOf(1 - (double) product.getDiscount()/100))
                     .add(order.getTotalPrice()));
+
+            int newQuantity = cart.getProductQuantity() - orderDetail.getProductQuantity();
+            if(newQuantity <= 0) {
+                cartRepository.delete(cart);
+            } else {
+                cart.setProductQuantity(newQuantity);
+            }
         }
         order.setTotalPrice(order.getTotalPrice().subtract(BigDecimal.valueOf(1)));
         orderRepository.save(order);
@@ -132,12 +146,28 @@ public class OrderServiceImpl implements OrderService {
         return modelMapper.map(order, OrderResponse.class);
     }
 
+    public List<OrderResponse> getOrderHistory(OrderStatus status) {
+        UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<Order> orderList = orderRepository.findAllByOrderStatusAndMemberMemberId(status, userDetails.getId());
+        return orderList.stream()
+                .map(order -> modelMapper.map(order, OrderResponse.class))
+                .toList();
+    }
+
+    @Override
+    public List<OrderResponse> getAllOrderHistory() {
+        UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<Order> orderList = orderRepository.findAllByMemberMemberId(userDetails.getId());
+        return orderList.stream()
+                .map(order -> modelMapper.map(order, OrderResponse.class))
+                .toList();
+    }
+
     public void checkValidUser(String memberId) {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(!Objects.equals(memberId, userDetails.getId())) {
             throw new DomainException("Cannot find this order in your account, please retry");
         }
     }
-
 }
 
