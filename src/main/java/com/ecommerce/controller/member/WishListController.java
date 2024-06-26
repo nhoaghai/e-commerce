@@ -1,16 +1,17 @@
 package com.ecommerce.controller.member;
 
 import com.ecommerce.common.util.MessageResponse;
+import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.shoppingCart.dto.request.WishListRequest;
 import com.ecommerce.domain.shoppingCart.dto.response.WishListResponse;
 import com.ecommerce.domain.shoppingCart.serviceImpl.WishListServiceImpl;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,8 +21,9 @@ public class WishListController {
     private final WishListServiceImpl wishListService;
 
     @GetMapping("/show")
-    public ResponseEntity<List<WishListResponse>> getAllWishItems(Pageable pageable) {
-        return ResponseEntity.ok(wishListService.getAllWistlistItems());
+    public ResponseEntity<PageResponseDto<WishListResponse>> getAllWishItems(
+            @SortDefault(sort = "wishListId", direction = Sort.Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok(wishListService.getAllWistlistItems(pageable));
     }
 
     @PostMapping("/add")

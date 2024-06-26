@@ -1,13 +1,13 @@
 package com.ecommerce.domain.shoppingCart.service;
 
 import com.ecommerce.common.util.MessageResponse;
+import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.shoppingCart.dto.request.CartRequest;
 import com.ecommerce.domain.shoppingCart.dto.response.CartResponse;
-
-import java.util.List;
+import org.springframework.data.domain.Pageable;
 
 public interface CartService {
-    List<CartResponse> findAllCart();
+    PageResponseDto<CartResponse> findAllCart(Pageable pageable);
 
     CartResponse addNewProductIntoCart(CartRequest cartRequest);
 

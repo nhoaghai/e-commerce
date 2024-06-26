@@ -1,6 +1,7 @@
 package com.ecommerce.controller.member;
 
 import com.ecommerce.common.util.MessageResponse;
+import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.order.dto.request.OrderRequest;
 import com.ecommerce.domain.order.dto.response.OrderResponse;
 import com.ecommerce.domain.order.serviceImpl.OrderServiceImpl;
@@ -9,10 +10,11 @@ import com.ecommerce.domain.shoppingCart.dto.response.CartResponse;
 import com.ecommerce.domain.shoppingCart.serviceImpl.CartServiceImpl;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,8 +25,9 @@ public class CartController {
     private final OrderServiceImpl orderService;
 
     @GetMapping("/list")
-    public ResponseEntity<List<CartResponse>> findAllCart(){
-        return ResponseEntity.ok(cartService.findAllCart());
+    public ResponseEntity<PageResponseDto<CartResponse>> findAllCart(
+            @SortDefault(sort = "shoppingCartId", direction = Sort.Direction.ASC) Pageable pageable){
+        return ResponseEntity.ok(cartService.findAllCart(pageable));
     }
 
     @PostMapping("/add")

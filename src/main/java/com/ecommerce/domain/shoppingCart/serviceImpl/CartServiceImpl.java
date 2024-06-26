@@ -2,6 +2,7 @@ package com.ecommerce.domain.shoppingCart.serviceImpl;
 
 import com.ecommerce.common.exception.DomainException;
 import com.ecommerce.common.util.MessageResponse;
+import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.security.serviceImpl.jwtService.UserDetailImpl;
 import com.ecommerce.domain.shoppingCart.dto.mapper.CartMapper;
 import com.ecommerce.domain.shoppingCart.dto.request.CartRequest;
@@ -12,6 +13,8 @@ import com.ecommerce.domain.shoppingCart.repository.CartRepository;
 import com.ecommerce.domain.shoppingCart.service.CartService;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -29,17 +32,24 @@ public class CartServiceImpl implements CartService {
 
 
     @Override
-    public List<CartResponse> findAllCart() {
+    public PageResponseDto<CartResponse> findAllCart(Pageable pageable) {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<ShoppingCart> carts = cartRepository.findAllByMemberMemberId(userDetails.getId());
+        Page<ShoppingCart> carts = cartRepository.findAllByMemberMemberId(userDetails.getId(), pageable);
 
         if (carts.isEmpty()){
             throw CartException.notFound("No products in your cart!");
         }else {
-            return carts.stream()
+            PageResponseDto<CartResponse> pageRDTO = new PageResponseDto<>();
+            List<CartResponse> cartData = carts.getContent().stream()
                     .map(cartMapper::cartMappingToResponse
                     )
                     .toList();
+            pageRDTO.setData(cartData);
+            pageRDTO.setPageNumber(carts.getNumber());
+            pageRDTO.setTotalPage(carts.getTotalPages());
+            pageRDTO.setSize(carts.getSize());
+            pageRDTO.setSort(carts.getSort().toString());
+            return pageRDTO;
         }
     }
 
