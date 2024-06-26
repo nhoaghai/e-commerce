@@ -31,6 +31,9 @@ public class Seller {
     @Column(name = "phone_number")
     private String phoneNumber;
 
+    @Column(name = "is_active")
+    private boolean isActive;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "member_id")
     @MapsId

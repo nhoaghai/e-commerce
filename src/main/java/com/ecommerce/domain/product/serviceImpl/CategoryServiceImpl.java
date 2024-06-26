@@ -24,19 +24,17 @@ public class CategoryServiceImpl implements CategoryService {
     private final ModelMapper modelMapper;
     @Override
     public PageResponseDto<CategoryResponse> findAllCategory(Pageable pageable) {
-        Page<Category> page = categoryRepository.findAll(pageable);
-
-        List<CategoryResponse> data = page.getContent().stream()
+        Page<Category> page = categoryRepository.findCategoriesByActive(pageable);
+        List<CategoryResponse> data = page.stream()
                 .map(category -> modelMapper.map(category, CategoryResponse.class))
                 .toList();
-        PageResponseDto<CategoryResponse> pageResponseDto = new PageResponseDto<>();
-        pageResponseDto.setData(data);
-        pageResponseDto.setTotalPage(page.getTotalPages());
-        pageResponseDto.setSize(page.getSize());
-        pageResponseDto.setPageNumber(page.getNumber());
-        pageResponseDto.setSort(page.getSort().toString());
-
-        return pageResponseDto;
+        return PageResponseDto.<CategoryResponse>builder()
+                .data(data)
+                .totalPage(page.getTotalPages())
+                .pageNumber(page.getNumber())
+                .size(page.getSize())
+                .sort(page.getSort().toString())
+                .build();
     }
 
     @Override

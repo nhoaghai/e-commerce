@@ -39,7 +39,7 @@ public class Order {
     @Column(name = "receive_address")
     private String receiveAddress;
 
-    @Column(name = "receive_phone", columnDefinition = "varchar(15)")
+    @Column(name = "receive_phone", length = 15)
     private String receivePhone;
 
     @Column(name = "create_at")

@@ -26,7 +26,7 @@ public class Category {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "is_active", columnDefinition = "boolean default true")
+    @Column(name = "is_active")
     private boolean isActive;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
