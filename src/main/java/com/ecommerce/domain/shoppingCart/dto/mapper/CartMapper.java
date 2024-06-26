@@ -24,6 +24,7 @@ public class CartMapper {
         response.setProductQuantity(shoppingCart.getProductQuantity());
         response.setProductName(shoppingCart.getProduct().getProductName());
         response.setProductId(shoppingCart.getProduct().getProductId());
+        response.setCartId(shoppingCart.getShoppingCartId());
         return response;
     }
 
