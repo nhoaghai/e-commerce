@@ -1,6 +1,7 @@
 package com.ecommerce.domain.order.serviceImpl;
 
 import com.ecommerce.common.exception.DomainException;
+import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.order.dto.request.OrderRequest;
 import com.ecommerce.domain.order.dto.response.OrderDetailResponse;
 import com.ecommerce.domain.order.dto.response.OrderResponse;
@@ -21,15 +22,16 @@ import com.ecommerce.domain.shoppingCart.repository.CartRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.time.YearMonth;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -64,7 +66,7 @@ public class OrderServiceImpl implements OrderService {
                     .orElseThrow(() -> DomainException.notFound("Cannot found cart with that id!"));
             if(!Objects.equals(cart.getMember().getMemberId(), userDetails.getId())) {
                 throw new DomainException("Cannot found cart with that id!");
-            };
+            }
 
             Product product = productRepository.findByProductId(cart.getProduct().getProductId());
 
@@ -93,12 +95,24 @@ public class OrderServiceImpl implements OrderService {
         return modelMapper.map(order, OrderResponse.class);
     }
 
-    public List<OrderResponse> findAllOrders() {
+    public PageResponseDto<OrderResponse> findAllOrders(Pageable pageable) {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<Order> orders = orderRepository.findAllByMemberMemberId(userDetails.getId());
-        return orders.stream()
+
+        List<OrderStatus> statuses = Arrays.asList(OrderStatus.WAITING, OrderStatus.CONFIRM, OrderStatus.DELIVERY);
+        Page<Order> page = orderRepository.findAllByMemberMemberIdAndOrderStatusIsIn(userDetails.getId(), statuses, pageable);
+
+        List<OrderResponse> data = page.stream()
                 .map(order -> modelMapper.map(order, OrderResponse.class))
                 .toList();
+
+        return PageResponseDto.<OrderResponse>builder()
+                .data(data)
+                .totalPage(page.getTotalPages())
+                .pageNumber(page.getNumber())
+                .size(page.getSize())
+                .sort(page.getSort().toString())
+                .build();
+
     }
 
     public List<OrderDetailResponse> getProductsInOrder(String serialNumber) {
@@ -134,6 +148,7 @@ public class OrderServiceImpl implements OrderService {
         return modelMapper.map(order, OrderResponse.class);
     }
 
+    @Override
     public OrderResponse cancelOrder(String sku) {
         Order order = orderRepository.findFirstBySerialNumber(sku);
         checkValidUser(order.getMember().getMemberId());
@@ -146,6 +161,7 @@ public class OrderServiceImpl implements OrderService {
         return modelMapper.map(order, OrderResponse.class);
     }
 
+    @Override
     public List<OrderResponse> getOrderHistory(OrderStatus status) {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Order> orderList = orderRepository.findAllByOrderStatusAndMemberMemberId(status, userDetails.getId());
@@ -155,13 +171,58 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderResponse> getAllOrderHistory() {
+    public PageResponseDto<OrderResponse> getSuccessOrderHistory(Pageable pageable) {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<Order> orderList = orderRepository.findAllByMemberMemberId(userDetails.getId());
+        Page<Order> page = orderRepository.findAllByOrderStatusAndMemberMemberId(OrderStatus.SUCCESS, userDetails.getId(), pageable);
+        List<OrderResponse> data = page.stream()
+                .map(order -> modelMapper.map(order, OrderResponse.class))
+                .toList();
+
+        return PageResponseDto.<OrderResponse>builder()
+                .data(data)
+                .totalPage(page.getTotalPages())
+                .pageNumber(page.getNumber())
+                .size(page.getSize())
+                .sort(page.getSort().toString())
+                .build();
+
+    }
+    @Override
+    public List<OrderResponse> getCancelOrderHistory() {
+        UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<OrderStatus> statuses = Arrays.asList(OrderStatus.CANCEL, OrderStatus.DENIED);
+        List<Order> orderList = orderRepository.findAllByMemberMemberIdAndOrderStatusIsIn(userDetails.getId(), statuses);
         return orderList.stream()
                 .map(order -> modelMapper.map(order, OrderResponse.class))
                 .toList();
     }
+
+
+    @Override
+    public BigDecimal getMonthlySpending(Integer month, Integer year) {
+        UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (month < 1 || month > 12) {
+            throw new IllegalArgumentException("Month must be between 1 and 12");
+        }
+
+        // Create a YearMonth instance for the specified year and month
+        YearMonth yearMonth = YearMonth.of(year, month);
+        LocalDate firstDayOfMonth = yearMonth.atDay(1);
+        LocalDateTime firstDay = firstDayOfMonth.atStartOfDay();
+
+        LocalDate lastDayOfMonth = yearMonth.atEndOfMonth();
+        LocalDateTime lastDay = lastDayOfMonth.atTime(23, 59, 59, 999999999);
+
+        BigDecimal result = BigDecimal.valueOf(0);
+
+        List<Order> orderList = orderRepository.findAllByCreateAtBetweenAndMemberMemberIdAndOrderStatus(firstDay, lastDay, userDetails.getId(), OrderStatus.CONFIRM);
+        for(Order order:orderList) {
+            result = result.add(order.getTotalPrice());
+        }
+        return result;
+    }
+
 
     public void checkValidUser(String memberId) {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

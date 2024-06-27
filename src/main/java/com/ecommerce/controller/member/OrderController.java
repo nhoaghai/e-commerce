@@ -1,10 +1,14 @@
 package com.ecommerce.controller.member;
 
+import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.order.dto.response.OrderDetailResponse;
 import com.ecommerce.domain.order.dto.response.OrderResponse;
 import com.ecommerce.domain.order.serviceImpl.OrderServiceImpl;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,8 +23,8 @@ public class OrderController {
     private final OrderServiceImpl orderService;
 
     @GetMapping("/orders")
-    public ResponseEntity<List<OrderResponse>> findAllOrders() {
-        return ResponseEntity.ok(orderService.findAllOrders());
+    public ResponseEntity<PageResponseDto<OrderResponse>> findAllOrders(@SortDefault(sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(orderService.findAllOrders(pageable));
     }
 
     @PutMapping("/orders/cancel/{sku}")
