@@ -110,12 +110,21 @@ public class SellerServiceImpl implements SellerService {
     public ProductResponse addProduct(ProductRequest request) {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
+        List<Product> productList = productRepository.findAllBySellerSellerId(userDetails.getId());
+        for(Product product:productList) {
+            if (Objects.equals(product.getProductName(), request.getProductName())) {
+                throw new DomainException("You already have a product of this name. Please choose another product name");
+            }
+        }
+
         Product product = modelMapper.map(request, Product.class);
         product.setActive(true);
         product.setSku(generateRandomSKU());
         product.setSeller(sellerRepository.findByMemberMemberId(userDetails.getId()));
         product.setCreateAt(LocalDateTime.now());
         product.setCategory(categoryRepository.findByCategoryName(request.getCategoryName()));
+
+        productRepository.save(product);
 
         return modelMapper.map(product, ProductResponse.class);
     }
