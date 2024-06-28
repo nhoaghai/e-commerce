@@ -1,27 +1,48 @@
 package com.ecommerce.domain.member.serviceImpl;
 
+import com.ecommerce.common.exception.DomainException;
 import com.ecommerce.common.util.MessageResponse;
+import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.member.dto.request.SellerSignUpRequest;
 import com.ecommerce.domain.member.exception.SellerException;
 import com.ecommerce.domain.member.model.Seller;
 import com.ecommerce.domain.member.repository.SellerRepository;
 import com.ecommerce.domain.member.service.SellerService;
+import com.ecommerce.domain.product.dto.request.ProductRequest;
+import com.ecommerce.domain.product.dto.response.ProductResponse;
+import com.ecommerce.domain.product.exception.ProductException;
+import com.ecommerce.domain.product.model.Product;
+import com.ecommerce.domain.product.repository.CategoryRepository;
+import com.ecommerce.domain.product.repository.ProductRepository;
 import com.ecommerce.domain.security.model.Member;
 import com.ecommerce.domain.security.model.RoleName;
 import com.ecommerce.domain.security.repository.MemberRepository;
 import com.ecommerce.domain.security.serviceImpl.RoleServiceImpl;
 import com.ecommerce.domain.security.serviceImpl.jwtService.UserDetailImpl;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class SellerServiceImpl implements SellerService {
     private final SellerRepository sellerRepository;
     private final MemberRepository memberRepository;
+    private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
     private final RoleServiceImpl roleService;
+    private final ModelMapper modelMapper;
+
+
     @Override
     public MessageResponse sellerSignUp(SellerSignUpRequest sellerSignUpRequest) {
         UserDetailImpl memberDetail = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -51,8 +72,65 @@ public class SellerServiceImpl implements SellerService {
             Seller seller = sellerRepository.findByMemberMemberId(memberDetail.getId());
             return MessageResponse.builder()
                     .httpStatus(HttpStatus.OK)
-                    .message("Hello "+seller.getShopName())
+                    .message("Hello " + seller.getShopName())
                     .build();
         }
     }
+
+    @Override
+    public PageResponseDto<ProductResponse> findAllSellingProduct(Pageable pageable) {
+        UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Page<Product> page = productRepository.findAllBySellerSellerId(userDetails.getId(), pageable);
+
+        if (page.isEmpty()){
+            throw ProductException.notFound("No products is being sold!");
+        } else {
+            List<ProductResponse> data = page.stream()
+                    .map(order -> modelMapper.map(order, ProductResponse.class))
+                    .toList();
+            return PageResponseDto.<ProductResponse>builder()
+                    .data(data)
+                    .totalPage(page.getTotalPages())
+                    .pageNumber(page.getNumber())
+                    .size(page.getSize())
+                    .sort(page.getSort().toString())
+                    .build();
+        }
+    }
+
+    public ProductResponse findSellingProduct(String sku) {
+        UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Product product = productRepository.findByProductSku(sku);
+        if(!Objects.equals(userDetails.getId(), product.getSeller().getSellerId())) {
+            throw new DomainException("No product of this sku found");
+        }
+        return modelMapper.map(product, ProductResponse.class);
+    }
+
+    public ProductResponse addProduct(ProductRequest request) {
+        UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Product product = modelMapper.map(request, Product.class);
+        product.setActive(true);
+        product.setSku(generateRandomSKU());
+        product.setSeller(sellerRepository.findByMemberMemberId(userDetails.getId()));
+        product.setCreateAt(LocalDateTime.now());
+        product.setCategory(categoryRepository.findByCategoryName(request.getCategoryName()));
+
+        return modelMapper.map(product, ProductResponse.class);
+    }
+
+    public static String generateRandomSKU() {
+        UUID uuid = UUID.randomUUID();
+        String uuidStr = uuid.toString();
+
+        String part1 = uuidStr.substring(0, 8);
+        String part2 = uuidStr.substring(9, 13);
+        String part3 = uuidStr.substring(14, 18);
+
+        return part1 + "-" + part2 + "-" + part3;
+    }
+
+
+
 }

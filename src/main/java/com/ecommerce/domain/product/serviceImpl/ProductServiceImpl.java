@@ -98,7 +98,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findByProductSku(sku);
         if (product == null){
             throw new ProductException("Not found product with id");
-        }else {
+        } else {
             ProductResponse response = modelMapper.map(product, ProductResponse.class);
             response.setCategoryName(product.getCategory().getCategoryName());
             response.setShopName(product.getSeller().getShopName());

@@ -15,6 +15,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     Category findByCategoryId(Long categoryId);
 
+    Category findByCategoryName(String categoryName);
+
     @Query(value = "SELECT c from Category c where c.isActive = true")
     Page<Category> findCategoriesByActive(Pageable pageable);
 //    @Query(value = "select  C from Category  C where C.active = true")
