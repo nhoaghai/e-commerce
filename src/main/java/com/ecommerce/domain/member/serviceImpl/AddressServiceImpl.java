@@ -1,6 +1,7 @@
 package com.ecommerce.domain.member.serviceImpl;
 
 import com.ecommerce.common.util.MessageResponse;
+import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.member.dto.request.AddressRequest;
 import com.ecommerce.domain.member.dto.response.AddressResponse;
 import com.ecommerce.domain.member.exception.AddressException;
@@ -12,6 +13,8 @@ import com.ecommerce.domain.security.repository.MemberRepository;
 import com.ecommerce.domain.security.serviceImpl.jwtService.UserDetailImpl;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -27,12 +30,20 @@ public class AddressServiceImpl implements AddressService {
     private final ModelMapper modelMapper;
 
     @Override
-    public List<AddressResponse> getAllAddressList() {
+    public PageResponseDto<AddressResponse> getAllAddressList(Pageable pageable) {
         UserDetailImpl memberDetail = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<Address> addresses = addressRepository.findByMemberMemberId(memberDetail.getId());
-        return addresses.stream()
+        Page<Address> page = addressRepository.findAllByMemberMemberId(memberDetail.getId(), pageable);
+        List<AddressResponse> data = page.stream()
                 .map(address -> modelMapper.map(address, AddressResponse.class))
                 .toList();
+
+        return PageResponseDto.<AddressResponse>builder()
+                .data(data)
+                .pageNumber(page.getNumber())
+                .totalPage(page.getTotalPages())
+                .size(page.getSize())
+                .sort(page.getSort().toString())
+                .build();
     }
 
     @Override

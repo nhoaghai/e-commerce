@@ -47,8 +47,12 @@ public class SellerServiceImpl implements SellerService {
         if (!member.getRoles().contains(roleService.findByRoleName(RoleName.ROLE_SELLER))){
             throw new SellerException("Member did not register to be a seller!");
         }
-        else {
-            Seller seller = sellerRepository.findByMemberMemberId(memberDetail.getId());
+
+        Seller seller = sellerRepository.findByMemberMemberId(memberDetail.getId());
+
+        if (!seller.isActive()) {
+            throw new SellerException("Member was banned! Contact to admin to unlock!");
+        } else {
             return MessageResponse.builder()
                     .httpStatus(HttpStatus.OK)
                     .message("Hello "+seller.getShopName())

@@ -65,7 +65,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/v3/auth/**").permitAll()
                         .requestMatchers(permitAllUrl).permitAll()
                         .requestMatchers("/api/v3/member/**").hasAnyRole("MEMBER", "SELLER","ADMIN")
-                        .requestMatchers("/api/v3/seller/sign-up","/spi/v3/seller/sign-in").hasAnyRole("MEMBER", "ADMIN")
+                        .requestMatchers("/api/v3/seller/sign-up","/api/v3/seller/sign-in").hasAnyRole("MEMBER", "ADMIN")
                         .requestMatchers("/api/v3/seller/**").hasAnyRole("SELLER", "ADMIN")
                         .requestMatchers("/api/v3/admin/**").hasRole("ADMIN")
 
