@@ -5,11 +5,9 @@ import com.ecommerce.common.util.UploadService;
 import com.ecommerce.domain.member.model.Address;
 import com.ecommerce.domain.member.repository.AddressRepository;
 import com.ecommerce.domain.security.dto.request.AccountRequest;
-import com.ecommerce.domain.member.dto.request.AddressRequest;
 import com.ecommerce.domain.security.dto.request.ChangeAvatarRequest;
 import com.ecommerce.domain.security.dto.request.ChangePasswordRequest;
 import com.ecommerce.domain.security.dto.response.AccountResponse;
-import com.ecommerce.domain.member.dto.response.AddressResponse;
 import com.ecommerce.domain.security.exception.MemberException;
 import com.ecommerce.domain.security.jwt.JwtProvider;
 import com.ecommerce.domain.security.model.Member;
@@ -26,7 +24,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -46,7 +43,7 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findByMemberId(memberDetail.getId());
         AccountResponse response = modelMapper.map(member, AccountResponse.class);
         response.setAddress(addressRepository.findByMemberMemberId(member.getMemberId()).stream()
-                .map(address -> address.getFullAddress()).toList());
+                .map(Address::getFullAddress).toList());
         return response;
     }
 
