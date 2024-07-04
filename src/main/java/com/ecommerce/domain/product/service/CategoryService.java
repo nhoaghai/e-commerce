@@ -16,5 +16,5 @@ public interface CategoryService {
 
     CategoryResponse addNewCategory(CategoryRequest categoryRequest);
 
-    CategoryResponse updateCategory(CategoryRequest categoryRequest);
+    List<CategoryResponse> updateCategory(List<CategoryRequest> categoryRequest);
 }

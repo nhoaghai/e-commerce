@@ -41,4 +41,9 @@ public class AdminController {
         return ResponseEntity.ok(categoryService.deleteCategory(request));
     }
 
+    @PutMapping("/category/update")
+    public ResponseEntity<List<CategoryResponse>> updateCategory(@RequestBody List<CategoryRequest> requests) {
+        return ResponseEntity.ok(categoryService.updateCategory(requests));
+    }
+
 }
