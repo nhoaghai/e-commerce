@@ -2,6 +2,7 @@ package com.ecommerce.controller.permitAll;
 
 import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.product.dto.response.ProductResponse;
+import com.ecommerce.domain.product.dto.response.ShopProductResponse;
 import com.ecommerce.domain.product.serviceImpl.ProductServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -39,5 +40,10 @@ public class ProductController {
     @GetMapping("/{sku}")
     public ResponseEntity<ProductResponse> findProductBySku(@PathVariable String sku){
         return ResponseEntity.ok(productService.findByProductSku(sku));
+    }
+
+    @GetMapping("/shop/{shopName}")
+    public ResponseEntity<List<ShopProductResponse>> findAllShopProduct(@PathVariable String shopName) {
+        return ResponseEntity.ok(productService.findAllShopProduct(shopName));
     }
 }

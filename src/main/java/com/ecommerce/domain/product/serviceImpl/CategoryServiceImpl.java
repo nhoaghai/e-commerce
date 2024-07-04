@@ -1,11 +1,14 @@
 package com.ecommerce.domain.product.serviceImpl;
 
+import com.ecommerce.common.exception.DomainException;
 import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.product.dto.request.CategoryRequest;
 import com.ecommerce.domain.product.dto.response.CategoryResponse;
 import com.ecommerce.domain.product.exception.CategoryException;
 import com.ecommerce.domain.product.model.Category;
+import com.ecommerce.domain.product.model.Product;
 import com.ecommerce.domain.product.repository.CategoryRepository;
+import com.ecommerce.domain.product.repository.ProductRepository;
 import com.ecommerce.domain.product.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -14,7 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +25,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final ModelMapper modelMapper;
+    private final ProductRepository productRepository;
+
     @Override
     public PageResponseDto<CategoryResponse> findAllCategory(Pageable pageable) {
         Page<Category> page = categoryRepository.findCategoriesByActive(pageable);
@@ -43,7 +48,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         if (categories.isEmpty()){
             throw CategoryException.notFound("No category found matching the search criteria");
-        }else {
+        } else {
             return categories.stream()
                     .map(category -> modelMapper.map(category, CategoryResponse.class))
                     .toList();
@@ -55,7 +60,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findByCategoryId(categoryId);
         if (category == null){
             throw CategoryException.notFound("Could not found category with id");
-        }else {
+        } else {
             return modelMapper.map(category, CategoryResponse.class);
         }
     }
@@ -66,11 +71,38 @@ public class CategoryServiceImpl implements CategoryService {
         if (category == null){
             //add new
             categoryRepository.save(modelMapper.map(categoryRequest, Category.class));
-        }else {
+        } else {
             //update
             category.setCategoryName(categoryRequest.getCategoryName());
             category.setDescription(categoryRequest.getDescription());
         }
         return modelMapper.map(category, CategoryResponse.class);
     }
+
+    @Override
+    public CategoryResponse updateCategory(CategoryRequest categoryRequest) {
+        Category category = categoryRepository.findByCategoryId(categoryRequest.getCategoryId());
+        if(category == null) {
+            throw new DomainException("This category does not exist");
+        }
+        if(Objects.equals(category.getCategoryName(), "") || Objects.equals(category.getDescription(), "")) {
+            throw new CategoryException("Please provide category name and description");
+        }
+        categoryRepository.save(modelMapper.map(categoryRequest, Category.class));
+        return modelMapper.map(category, CategoryResponse.class);
+    }
+
+    public CategoryResponse deleteCategory(CategoryRequest categoryRequest) {
+        Category category = categoryRepository.findByCategoryId(categoryRequest.getCategoryId());
+        if(category == null) {
+            throw new DomainException("This category does not exist");
+        }
+        List<Product> products = productRepository.findAllByCategoryCategoryId(category.getCategoryId());
+        if(!products.isEmpty()) {
+            throw new DomainException("There are products in this category");
+        }
+        categoryRepository.delete(category);
+        return modelMapper.map(category, CategoryResponse.class);
+    }
+
 }

@@ -15,4 +15,6 @@ public interface CategoryService {
     CategoryResponse findCategoryById(Long categoryId);
 
     CategoryResponse addNewCategory(CategoryRequest categoryRequest);
+
+    CategoryResponse updateCategory(CategoryRequest categoryRequest);
 }
