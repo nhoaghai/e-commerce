@@ -1,7 +1,6 @@
 package com.ecommerce.domain.product.repository;
 
 import com.ecommerce.domain.member.model.Seller;
-import com.ecommerce.domain.product.model.Category;
 import com.ecommerce.domain.product.model.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
