@@ -136,6 +136,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public OrderResponse confirmOrder(String sku) {
         Order order = orderRepository.findFirstBySerialNumber(sku);
         checkValidUser(order.getMember().getMemberId());

@@ -1,6 +1,7 @@
 package com.ecommerce.domain.product.repository;
 
 import com.ecommerce.domain.product.model.Category;
+import com.ecommerce.domain.product.model.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,8 +16,11 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     Category findByCategoryId(Long categoryId);
 
+    Category findByCategoryName(String categoryName);
+
     @Query(value = "SELECT c from Category c where c.isActive = true")
     Page<Category> findCategoriesByActive(Pageable pageable);
-//    @Query(value = "select  C from Category  C where C.active = true")
-//    Page<Category> findProductActive(Pageable pageable);
+
+    List<Category> findDistinctByProducts(List<Product> products);
+
 }

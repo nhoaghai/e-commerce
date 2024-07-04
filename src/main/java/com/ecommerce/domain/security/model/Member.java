@@ -5,6 +5,7 @@ import com.ecommerce.domain.member.model.Seller;
 import com.ecommerce.domain.order.model.Order;
 import com.ecommerce.domain.shoppingCart.model.ShoppingCart;
 import com.ecommerce.domain.shoppingCart.model.WishList;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -78,12 +79,14 @@ public class Member {
     private List<WishList> wishLists;
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
+    @JsonIgnore
     private Seller seller;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Order> order;
 
     @OneToMany(mappedBy = "member")
+    @JsonIgnore
     private List<Token> tokens;
 
     @Transient

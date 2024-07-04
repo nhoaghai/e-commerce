@@ -5,6 +5,8 @@ import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.member.dto.request.SellerProductRequest;
 import com.ecommerce.domain.member.dto.request.SellerSignUpRequest;
 import com.ecommerce.domain.member.serviceImpl.SellerServiceImpl;
+import com.ecommerce.domain.product.dto.request.ProductRequest;
+import com.ecommerce.domain.product.dto.response.ProductResponse;
 import com.ecommerce.domain.order.dto.response.SellerOrderDetailResponse;
 import com.ecommerce.domain.order.model.OrderStatus;
 import com.ecommerce.domain.product.dto.response.ProductResponse;
@@ -33,6 +35,21 @@ public class SellerController {
     @GetMapping("/sign-in")
     public ResponseEntity<MessageResponse> sellerSignIn(){
         return ResponseEntity.ok(sellerService.sellerSignIn());
+    }
+
+    @PostMapping("/product/new-product")
+    public ResponseEntity<ProductResponse> addProduct(@RequestBody ProductRequest request) {
+        return ResponseEntity.ok(sellerService.addProduct(request));
+    }
+
+    @GetMapping("/product")
+    public ResponseEntity<PageResponseDto<ProductResponse>> allSellingProduct(Pageable pageable) {
+        return ResponseEntity.ok(sellerService.findAllSellingProduct(pageable));
+    }
+
+    @GetMapping("/product/{sku}")
+    public ResponseEntity<ProductResponse> getSellingProduct(@PathVariable String sku) {
+        return ResponseEntity.ok(sellerService.findSellingProduct(sku));
     }
 
     @PutMapping("/product/{productId}")

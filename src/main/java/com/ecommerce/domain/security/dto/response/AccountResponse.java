@@ -1,9 +1,11 @@
 package com.ecommerce.domain.security.dto.response;
 
+import com.ecommerce.domain.security.model.Role;
 import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -19,5 +21,8 @@ public class AccountResponse {
     private boolean gender;
     private LocalDate birthday;
     private String avatarUrl;
+    private boolean isActive;
     private List<String> address;
+
+    private Set<Role> roles;
 }

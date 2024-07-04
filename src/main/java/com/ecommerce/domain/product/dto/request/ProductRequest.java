@@ -12,8 +12,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductRequest {
-    private Long productId;
-    private String sku;
+    private String categoryName;
     private String productName;
     private Integer stockQuantity;
     private BigDecimal unitPrice;
