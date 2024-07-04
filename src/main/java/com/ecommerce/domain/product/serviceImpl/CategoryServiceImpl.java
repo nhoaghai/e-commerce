@@ -6,7 +6,9 @@ import com.ecommerce.domain.product.dto.request.CategoryRequest;
 import com.ecommerce.domain.product.dto.response.CategoryResponse;
 import com.ecommerce.domain.product.exception.CategoryException;
 import com.ecommerce.domain.product.model.Category;
+import com.ecommerce.domain.product.model.Product;
 import com.ecommerce.domain.product.repository.CategoryRepository;
+import com.ecommerce.domain.product.repository.ProductRepository;
 import com.ecommerce.domain.product.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -23,6 +25,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final ModelMapper modelMapper;
+    private final ProductRepository productRepository;
+
     @Override
     public PageResponseDto<CategoryResponse> findAllCategory(Pageable pageable) {
         Page<Category> page = categoryRepository.findCategoriesByActive(pageable);
@@ -88,5 +92,17 @@ public class CategoryServiceImpl implements CategoryService {
         return modelMapper.map(category, CategoryResponse.class);
     }
 
+    public CategoryResponse deleteCategory(CategoryRequest categoryRequest) {
+        Category category = categoryRepository.findByCategoryId(categoryRequest.getCategoryId());
+        if(category == null) {
+            throw new DomainException("This category does not exist");
+        }
+        List<Product> products = productRepository.findAllByCategoryCategoryId(category.getCategoryId());
+        if(!products.isEmpty()) {
+            throw new DomainException("There are products in this category");
+        }
+        categoryRepository.delete(category);
+        return modelMapper.map(category, CategoryResponse.class);
+    }
 
 }

@@ -98,6 +98,7 @@ public class SellerServiceImpl implements SellerService {
         }
     }
 
+    @Override
     public ProductResponse findSellingProduct(String sku) {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Product product = productRepository.findByProductSku(sku);
@@ -107,6 +108,7 @@ public class SellerServiceImpl implements SellerService {
         return modelMapper.map(product, ProductResponse.class);
     }
 
+    @Override
     public ProductResponse addProduct(ProductRequest request) {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
