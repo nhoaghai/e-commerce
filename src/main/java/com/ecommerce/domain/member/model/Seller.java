@@ -2,6 +2,7 @@ package com.ecommerce.domain.member.model;
 
 import com.ecommerce.domain.product.model.Product;
 import com.ecommerce.domain.security.model.Member;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -37,6 +38,7 @@ public class Seller {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "member_id")
     @MapsId
+    @JsonIgnore
     private Member member;
 
     @OneToMany(mappedBy = "seller")

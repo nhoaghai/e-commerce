@@ -3,6 +3,7 @@ package com.ecommerce.domain.product.model;
 import com.ecommerce.domain.member.model.Seller;
 import com.ecommerce.domain.shoppingCart.model.ShoppingCart;
 import com.ecommerce.domain.shoppingCart.model.WishList;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -70,6 +71,6 @@ public class Product {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "seller_id", referencedColumnName = "member_id")
-    @JsonIgnoreProperties("shopName")
+    @JsonIgnore
     private Seller seller;
 }

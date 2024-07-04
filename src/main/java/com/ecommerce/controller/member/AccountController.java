@@ -26,7 +26,7 @@ public class AccountController {
 
     @GetMapping("/profile")
     public ResponseEntity<AccountResponse> getMemberInfo() {
-        return ResponseEntity.ok(memberService.findById());
+        return ResponseEntity.ok(memberService.getMemberInfo());
     }
 
     @PutMapping("/profile")
