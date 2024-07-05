@@ -60,7 +60,6 @@ public class SellerServiceImpl implements SellerService {
     private final CategoryRepository categoryRepository;
     private final RoleServiceImpl roleService;
     private final ModelMapper modelMapper;
-    private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
 
