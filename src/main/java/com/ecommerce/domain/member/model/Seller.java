@@ -32,6 +32,9 @@ public class Seller {
     @Column(name = "phone_number")
     private String phoneNumber;
 
+    @Column(name = "address_pick_up")
+    private String addressPickUp;
+
     @Column(name = "is_active")
     private boolean isActive;
 

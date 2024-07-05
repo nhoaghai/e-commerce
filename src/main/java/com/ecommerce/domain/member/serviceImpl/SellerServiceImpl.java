@@ -15,6 +15,7 @@ import com.ecommerce.domain.product.model.Product;
 import com.ecommerce.domain.product.repository.CategoryRepository;
 import com.ecommerce.domain.product.repository.ProductRepository;
 import com.ecommerce.domain.security.model.Member;
+import com.ecommerce.domain.security.model.Role;
 import com.ecommerce.domain.security.model.RoleName;
 import com.ecommerce.domain.security.repository.MemberRepository;
 import com.ecommerce.domain.security.serviceImpl.RoleServiceImpl;
@@ -47,12 +48,19 @@ public class SellerServiceImpl implements SellerService {
     public MessageResponse sellerSignUp(SellerSignUpRequest sellerSignUpRequest) {
         UserDetailImpl memberDetail = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Member member = memberRepository.findByMemberId(memberDetail.getId());
-        member.getRoles().add(roleService.findByRoleName(RoleName.ROLE_SELLER));
+        Role roleSeller = roleService.findByRoleName(RoleName.ROLE_SELLER);
+        if (member.getRoles().contains(roleSeller)){
+            throw SellerException.badRequest("Member already is seller");
+        }
+        member.getRoles().add(roleSeller);
+        memberRepository.save(member);
 
         Seller seller = new Seller();
         seller.setShopName(sellerSignUpRequest.getShopName());
         seller.setEmail(sellerSignUpRequest.getEmail());
+        seller.setAddressPickUp(sellerSignUpRequest.getAddressPickup());
         seller.setPhoneNumber(sellerSignUpRequest.getPhoneNumber());
+        seller.setActive(true);
         seller.setMember(member);
         sellerRepository.save(seller);
         return MessageResponse.builder()
