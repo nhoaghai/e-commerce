@@ -4,7 +4,6 @@ import com.ecommerce.common.exception.DomainException;
 import com.ecommerce.common.util.MessageResponse;
 import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.member.dto.request.SellerProductRequest;
-import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.member.dto.request.SellerSignUpRequest;
 import com.ecommerce.domain.member.exception.SellerException;
 import com.ecommerce.domain.member.model.Seller;
@@ -22,11 +21,7 @@ import com.ecommerce.domain.product.exception.ProductException;
 import com.ecommerce.domain.product.model.Product;
 import com.ecommerce.domain.product.repository.ProductRepository;
 import com.ecommerce.domain.product.dto.request.ProductRequest;
-import com.ecommerce.domain.product.dto.response.ProductResponse;
-import com.ecommerce.domain.product.exception.ProductException;
-import com.ecommerce.domain.product.model.Product;
 import com.ecommerce.domain.product.repository.CategoryRepository;
-import com.ecommerce.domain.product.repository.ProductRepository;
 import com.ecommerce.domain.security.model.Member;
 import com.ecommerce.domain.security.model.Role;
 import com.ecommerce.domain.security.model.RoleName;
@@ -47,8 +42,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -173,9 +166,6 @@ public class SellerServiceImpl implements SellerService {
 
         return part1 + "-" + part2 + "-" + part3;
     }
-
-
-
 
     @Override
     public ProductResponse editProduct(Long productId, SellerProductRequest request) {

@@ -82,7 +82,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryResponse> updateCategory(List<CategoryRequest> categoryRequest) {
-        List<CategoryResponse> responses = new ArrayList<CategoryResponse>();
+        List<CategoryResponse> responses = new ArrayList<>();
         for(CategoryRequest request: categoryRequest) {
             Category category = categoryRepository.findByCategoryId(request.getCategoryId());
             if (category == null) {
@@ -94,7 +94,6 @@ public class CategoryServiceImpl implements CategoryService {
             categoryRepository.save(modelMapper.map(categoryRequest, Category.class));
             responses.add(modelMapper.map(category, CategoryResponse.class));
         }
-
         return responses;
     }
 

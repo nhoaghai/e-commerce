@@ -1,5 +1,6 @@
 package com.ecommerce.domain.order.dto.response;
 
+import com.ecommerce.domain.order.model.OrderStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,6 +10,8 @@ import java.math.BigDecimal;
 @Setter
 public class OrderDetailResponse {
     private Integer productQuantity;
+
+    private OrderStatus orderDetailStatus;
 
     private String productName;
 

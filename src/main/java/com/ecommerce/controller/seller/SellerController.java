@@ -9,7 +9,6 @@ import com.ecommerce.domain.product.dto.request.ProductRequest;
 import com.ecommerce.domain.product.dto.response.ProductResponse;
 import com.ecommerce.domain.order.dto.response.SellerOrderDetailResponse;
 import com.ecommerce.domain.order.model.OrderStatus;
-import com.ecommerce.domain.product.dto.response.ProductResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;

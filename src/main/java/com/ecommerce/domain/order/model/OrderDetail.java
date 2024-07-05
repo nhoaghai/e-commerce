@@ -8,8 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,6 +20,8 @@ public class OrderDetail {
 
     @Column(name = "product_quantity")
     private Integer productQuantity;
+
+    private OrderStatus orderDetailStatus;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("orderId")

@@ -77,6 +77,7 @@ public class OrderServiceImpl implements OrderService {
             OrderDetailId orderDetailId = new OrderDetailId(product.getProductId(), order.getOrderId());
             orderDetail.setOrder(order);
             orderDetail.setOrderDetailId(orderDetailId);
+            orderDetail.setOrderDetailStatus(OrderStatus.WAITING);
             orderDetailRepository.save(orderDetail);
 
             order.setTotalPrice(product.getUnitPrice()
@@ -131,6 +132,7 @@ public class OrderServiceImpl implements OrderService {
                 response.setProductDiscount(product.getDiscount());
                 response.setProductPrice(product.getUnitPrice());
                 response.setProductImageUrl(product.getImageUrl());
+                response.setOrderDetailStatus(orderDetail.getOrderDetailStatus());
                 return response;
             }).toList();
     }
@@ -141,7 +143,12 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findFirstBySerialNumber(sku);
         checkValidUser(order.getMember().getMemberId());
         if(order.getOrderStatus() == OrderStatus.DELIVERY) {
-            order.setOrderStatus(OrderStatus.CONFIRM);
+            List<OrderDetail> orderDetailList = orderDetailRepository.findAllByOrder(order);
+            for(OrderDetail orderDetail: orderDetailList) {
+                orderDetail.setOrderDetailStatus(OrderStatus.SUCCESS);
+                orderDetailRepository.save(orderDetail);
+            }
+            order.setOrderStatus(OrderStatus.SUCCESS);
             order.setReceiveAt(LocalDateTime.now());
             orderRepository.save(order);
         } else {
@@ -155,6 +162,11 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findFirstBySerialNumber(sku);
         checkValidUser(order.getMember().getMemberId());
         if(order.getOrderStatus() == OrderStatus.WAITING) {
+            List<OrderDetail> orderDetailList = orderDetailRepository.findAllByOrder(order);
+            for(OrderDetail orderDetail: orderDetailList) {
+                orderDetail.setOrderDetailStatus(OrderStatus.CANCEL);
+                orderDetailRepository.save(orderDetail);
+            }
             order.setOrderStatus(OrderStatus.CANCEL);
             orderRepository.save(order);
         } else {
