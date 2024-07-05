@@ -1,5 +1,6 @@
 package com.ecommerce.domain.member.serviceImpl;
 
+import com.ecommerce.common.exception.DomainException;
 import com.ecommerce.common.util.MessageResponse;
 import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.member.dto.request.SellerProductRequest;
