@@ -1,10 +1,10 @@
 package com.ecommerce.domain.order.serviceImpl;
 
-import com.ecommerce.common.exception.DomainException;
 import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.order.dto.request.OrderRequest;
 import com.ecommerce.domain.order.dto.response.OrderDetailResponse;
 import com.ecommerce.domain.order.dto.response.OrderResponse;
+import com.ecommerce.domain.order.exception.OrderException;
 import com.ecommerce.domain.order.model.Order;
 import com.ecommerce.domain.order.model.OrderDetail;
 import com.ecommerce.domain.order.model.OrderDetailId;
@@ -17,6 +17,7 @@ import com.ecommerce.domain.product.repository.ProductRepository;
 import com.ecommerce.domain.security.repository.MemberRepository;
 import com.ecommerce.domain.security.serviceImpl.jwtService.UserDetailImpl;
 import com.ecommerce.domain.shoppingCart.dto.request.CheckoutRequest;
+import com.ecommerce.domain.shoppingCart.exception.CartException;
 import com.ecommerce.domain.shoppingCart.model.ShoppingCart;
 import com.ecommerce.domain.shoppingCart.repository.CartRepository;
 import jakarta.transaction.Transactional;
@@ -63,9 +64,9 @@ public class OrderServiceImpl implements OrderService {
         ArrayList<CheckoutRequest> checkoutRequest = orderRequest.getCheckoutRequests();
         for (CheckoutRequest request : checkoutRequest) {
             ShoppingCart cart = cartRepository.findById(request.getShoppingCartId())
-                    .orElseThrow(() -> DomainException.notFound("Cannot found cart with that id!"));
+                    .orElseThrow(() -> CartException.notFound("Cannot found cart with that id!"));
             if(!Objects.equals(cart.getMember().getMemberId(), userDetails.getId())) {
-                throw new DomainException("Cannot found cart with that id!");
+                throw CartException.notFound("Cannot found cart with that id!");
             }
 
             Product product = productRepository.findByProductId(cart.getProduct().getProductId());
@@ -144,7 +145,7 @@ public class OrderServiceImpl implements OrderService {
             order.setReceiveAt(LocalDateTime.now());
             orderRepository.save(order);
         } else {
-            throw new DomainException("Sorry, you cannot confirm this order. This order has not been delivered'.");
+            throw OrderException.badRequest("Sorry, you cannot confirm this order. This order has not been delivered'.");
         }
         return modelMapper.map(order, OrderResponse.class);
     }
@@ -157,7 +158,7 @@ public class OrderServiceImpl implements OrderService {
             order.setOrderStatus(OrderStatus.CANCEL);
             orderRepository.save(order);
         } else {
-            throw new DomainException("Sorry, you cannot cancel this order. This order has already been prepared.");
+            throw OrderException.badRequest("Sorry, you cannot cancel this order. This order has already been prepared.");
         }
         return modelMapper.map(order, OrderResponse.class);
     }
@@ -228,7 +229,7 @@ public class OrderServiceImpl implements OrderService {
     public void checkValidUser(String memberId) {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(!Objects.equals(memberId, userDetails.getId())) {
-            throw new DomainException("Cannot find this order in your account, please retry");
+            throw OrderException.notFound("Cannot find this order in your account, please retry");
         }
     }
 }

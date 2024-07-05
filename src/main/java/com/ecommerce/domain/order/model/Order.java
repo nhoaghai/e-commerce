@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.UniqueElements;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -26,7 +25,6 @@ public class Order {
     private Long orderId;
 
     @Column(name = "serial_number", unique = true)
-    @UniqueElements
     private String serialNumber;
 
     @Column(name = "total_price", precision = 10, scale = 3)

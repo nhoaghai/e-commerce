@@ -16,7 +16,6 @@ import lombok.Setter;
 @Entity
 @Table(name = "wish_list")
 public class WishList {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "wish_list_id")
