@@ -5,6 +5,7 @@ import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.member.dto.request.SellerProductRequest;
 import com.ecommerce.domain.member.dto.request.SellerSignUpRequest;
 import com.ecommerce.domain.member.serviceImpl.SellerServiceImpl;
+import com.ecommerce.domain.order.model.OrderDetailId;
 import com.ecommerce.domain.product.dto.request.ProductRequest;
 import com.ecommerce.domain.product.dto.response.ProductResponse;
 import com.ecommerce.domain.order.dto.response.SellerOrderDetailResponse;
@@ -77,6 +78,19 @@ public class SellerController {
     public ResponseEntity<PageResponseDto<SellerOrderDetailResponse>> getOrdersByStatus
             (@PathVariable OrderStatus status, @SortDefault(sort = "productDiscount", direction = Sort.Direction.ASC) Pageable pageable) {
         return ResponseEntity.ok(sellerService.getOrderByStatus(status, pageable));
+    }
+
+    @PutMapping("/order/order-detail-status/{orderId}/{productId}")
+    public ResponseEntity<SellerOrderDetailResponse> updateOrderDetailStatus
+            (@PathVariable Long orderId,
+             @PathVariable Long productId,
+             @RequestParam OrderStatus odStatus) {
+
+        OrderDetailId odID = new OrderDetailId();
+        odID.setOrderId(orderId);
+        odID.setProductId(productId);
+
+        return ResponseEntity.ok(sellerService.editOrderDetailStatus(odID, odStatus));
     }
 
     @GetMapping("/revenue-over-time")

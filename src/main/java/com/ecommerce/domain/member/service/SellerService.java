@@ -2,15 +2,12 @@ package com.ecommerce.domain.member.service;
 
 import com.ecommerce.common.util.MessageResponse;
 import com.ecommerce.common.util.PageResponseDto;
-import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.member.dto.request.SellerProductRequest;
 import com.ecommerce.domain.member.dto.request.SellerSignUpRequest;
-import com.ecommerce.domain.product.dto.request.ProductRequest;
-import com.ecommerce.domain.product.dto.response.ProductResponse;
-import org.springframework.data.domain.Pageable;
-
 import com.ecommerce.domain.order.dto.response.SellerOrderDetailResponse;
+import com.ecommerce.domain.order.model.OrderDetailId;
 import com.ecommerce.domain.order.model.OrderStatus;
+import com.ecommerce.domain.product.dto.request.ProductRequest;
 import com.ecommerce.domain.product.dto.response.ProductResponse;
 import org.springframework.data.domain.Pageable;
 
@@ -39,4 +36,6 @@ public interface SellerService {
     PageResponseDto<SellerOrderDetailResponse> getOrderByStatus(OrderStatus status, Pageable pageable);
 
     MessageResponse getRevenueOverTime(String startDate, String endDate);
+
+    SellerOrderDetailResponse editOrderDetailStatus(OrderDetailId odID, OrderStatus odStatus);
 }

@@ -18,8 +18,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findAllByMemberMemberIdAndOrderStatusIsIn(String id, List<OrderStatus> orderStatus);
 
-//    List<Order> findAllByMemberMemberId(String id);
-
     Order findFirstBySerialNumber(String serial);
 
     List<Order> findAllByOrderStatusAndMemberMemberId(OrderStatus orderStatus, String memberId);

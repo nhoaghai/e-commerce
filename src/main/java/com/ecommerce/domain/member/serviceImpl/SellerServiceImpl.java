@@ -1,6 +1,5 @@
 package com.ecommerce.domain.member.serviceImpl;
 
-import com.ecommerce.common.exception.DomainException;
 import com.ecommerce.common.util.MessageResponse;
 import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.member.dto.request.SellerProductRequest;
@@ -13,15 +12,16 @@ import com.ecommerce.domain.order.dto.response.SellerOrderDetailResponse;
 import com.ecommerce.domain.order.exception.OrderException;
 import com.ecommerce.domain.order.model.Order;
 import com.ecommerce.domain.order.model.OrderDetail;
+import com.ecommerce.domain.order.model.OrderDetailId;
 import com.ecommerce.domain.order.model.OrderStatus;
 import com.ecommerce.domain.order.repository.OrderDetailRepository;
 import com.ecommerce.domain.order.repository.OrderRepository;
+import com.ecommerce.domain.product.dto.request.ProductRequest;
 import com.ecommerce.domain.product.dto.response.ProductResponse;
 import com.ecommerce.domain.product.exception.ProductException;
 import com.ecommerce.domain.product.model.Product;
-import com.ecommerce.domain.product.repository.ProductRepository;
-import com.ecommerce.domain.product.dto.request.ProductRequest;
 import com.ecommerce.domain.product.repository.CategoryRepository;
+import com.ecommerce.domain.product.repository.ProductRepository;
 import com.ecommerce.domain.security.model.Member;
 import com.ecommerce.domain.security.model.Role;
 import com.ecommerce.domain.security.model.RoleName;
@@ -41,7 +41,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
-
 import java.util.Objects;
 import java.util.UUID;
 
@@ -128,7 +127,7 @@ public class SellerServiceImpl implements SellerService {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Product product = productRepository.findByProductSku(sku);
         if(!Objects.equals(userDetails.getId(), product.getSeller().getSellerId())) {
-            throw new DomainException("No product of this sku found");
+            throw ProductException.notFound("No product of this sku found");
         }
         return modelMapper.map(product, ProductResponse.class);
     }
@@ -140,7 +139,7 @@ public class SellerServiceImpl implements SellerService {
         List<Product> productList = productRepository.findAllBySellerSellerId(userDetails.getId());
         for(Product product:productList) {
             if (Objects.equals(product.getProductName(), request.getProductName())) {
-                throw new DomainException("You already have a product of this name. Please choose another product name");
+                throw ProductException.conflict("You already have a product of this name. Please choose another product name");
             }
         }
 
@@ -226,7 +225,7 @@ public class SellerServiceImpl implements SellerService {
         List<SellerOrderDetailResponse> orderDetailResponses = orderDetailsPage.getContent().stream()
                 .map(orderDetail -> {
                     SellerOrderDetailResponse odRsp = modelMapper.map(orderDetail, SellerOrderDetailResponse.class);
-                    odRsp.setStatus(orderDetail.getOrder().getOrderStatus());
+                    odRsp.setStatus(getOrderDetailStatus(orderDetail));
                     return odRsp;
                 })
                 .toList();
@@ -244,12 +243,12 @@ public class SellerServiceImpl implements SellerService {
     @Override
     // get OD by Id
     public List<SellerOrderDetailResponse> getOrderById(Long orderId) {
-        List<OrderDetail> orders = getOrderByIdFromSeller(orderId);
+        List<OrderDetail> orderDetails = getOrderByIdFromSeller(orderId);
         // ALWAYS REMEMBER TO SET ORDER STATUS
-        return orders.stream()
-                .map(order -> {
-                    SellerOrderDetailResponse odResponse = modelMapper.map(order, SellerOrderDetailResponse.class);
-                    odResponse.setStatus(order.getOrder().getOrderStatus());
+        return orderDetails.stream()
+                .map(orderDetail -> {
+                    SellerOrderDetailResponse odResponse = modelMapper.map(orderDetail, SellerOrderDetailResponse.class);
+                    odResponse.setStatus(getOrderDetailStatus(orderDetail));
                     return odResponse;
                 })
                 .toList();
@@ -311,7 +310,7 @@ public class SellerServiceImpl implements SellerService {
 
             return MessageResponse.builder()
                     .httpStatus(HttpStatus.OK)
-                    .message("Your revenue from " + startDate.toString() + " to " + endDate.toString() + " is " + revenueOverTime)
+                    .message("Your revenue from " + startDate + " to " + endDate + " is " + revenueOverTime + " VND")
                     .build();
         } catch (DateTimeParseException e) {
             // Handle the exception - create a custom message response
@@ -319,6 +318,53 @@ public class SellerServiceImpl implements SellerService {
         }
     }
 
+    @Override
+    public SellerOrderDetailResponse editOrderDetailStatus(OrderDetailId odID, OrderStatus odStatus) {
+        OrderDetail orderDetail = orderDetailRepository.findById(odID)
+                .orElseThrow(() -> OrderException.notFound("No seller order found"));
+
+        // Update sub-order's status
+        orderDetail.setOrderDetailStatus(odStatus);
+        orderDetailRepository.save(orderDetail);
+
+        // DELIVERY: change the whole order's status when the last seller in an order updates the OD to DELIVERY
+        if (odStatus.equals(OrderStatus.DELIVERY)) {
+
+            Order order = orderRepository.findById(odID.getOrderId())
+                    .orElseThrow(() -> OrderException.notFound("No order found"));
+            List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder(order);
+
+            boolean allDelivered = false;
+            for (OrderDetail od : orderDetails) {
+                allDelivered = getOrderDetailStatus(od).equals(OrderStatus.DELIVERY);
+            }
+
+            if (allDelivered) {
+                order.setOrderStatus(OrderStatus.DELIVERY);
+                orderRepository.save(order);
+            }
+        }
+
+        // DENY: update order's total price
+        if (odStatus.equals(OrderStatus.DENIED)) {
+            Order order = orderRepository.findById(odID.getOrderId())
+                    .orElseThrow(() -> OrderException.notFound("No order found"));
+
+            Product product = orderDetail.getProduct();
+                if (product == null)
+                { throw ProductException.notFound("The product for this order doesn't exist. " +
+                        "Likely out of stock. Contact seller for more info.");}
+
+            BigDecimal deniedOrderPrice = product.getUnitPrice()
+                    .multiply(BigDecimal.valueOf(orderDetail.getProductQuantity()))
+                    .multiply(BigDecimal.valueOf(1-(product.getDiscount()/100)));
+
+            order.setTotalPrice(order.getTotalPrice().subtract(deniedOrderPrice));
+            orderRepository.save(order);
+        }
+
+        return modelMapper.map(orderDetail, SellerOrderDetailResponse.class);
+    }
 
     private List<Long> getProductIds() {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -330,6 +376,14 @@ public class SellerServiceImpl implements SellerService {
         return products.stream()
                 .map(Product::getProductId)
                 .toList();
+    }
+
+    private OrderStatus getOrderDetailStatus(OrderDetail od) {
+        OrderStatus oddStatus = od.getOrderDetailStatus();
+        if (oddStatus == null) {
+            throw OrderException.notFound("Your seller order doesn't have any status");
+        }
+        return oddStatus;
     }
 
     private Product checkProductOwnership(Long productId){

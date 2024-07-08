@@ -18,10 +18,10 @@ public class OrderDetail {
     @EmbeddedId
     private OrderDetailId orderDetailId;
 
+    private OrderStatus orderDetailStatus;
+
     @Column(name = "product_quantity")
     private Integer productQuantity;
-
-    private OrderStatus orderDetailStatus;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("orderId")
