@@ -36,6 +36,9 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public PageResponseDto<ProductResponse> findAllProduct(Pageable pageable) {
         Page<Product> page = productRepository.findAll(pageable);
+        if (page.isEmpty()) {
+            throw ProductException.notFound("No product found");
+        }
 
         List<ProductResponse> data = page.getContent().stream()
                 .map(product -> {

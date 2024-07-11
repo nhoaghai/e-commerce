@@ -31,6 +31,10 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public PageResponseDto<CategoryResponse> findAllCategory(Pageable pageable) {
         Page<Category> page = categoryRepository.findCategoriesByActive(pageable);
+        if (page.isEmpty()) {
+            throw CategoryException.notFound("No category found");
+        }
+
         List<CategoryResponse> data = page.stream()
                 .map(category -> modelMapper.map(category, CategoryResponse.class))
                 .toList();

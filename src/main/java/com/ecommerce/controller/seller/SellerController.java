@@ -5,15 +5,14 @@ import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.domain.member.dto.request.SellerProductRequest;
 import com.ecommerce.domain.member.dto.request.SellerSignUpRequest;
 import com.ecommerce.domain.member.serviceImpl.SellerServiceImpl;
+import com.ecommerce.domain.order.dto.response.SellerOrderDetailResponse;
 import com.ecommerce.domain.order.model.OrderDetailId;
+import com.ecommerce.domain.order.model.OrderStatus;
 import com.ecommerce.domain.product.dto.request.ProductRequest;
 import com.ecommerce.domain.product.dto.response.ProductResponse;
-import com.ecommerce.domain.order.dto.response.SellerOrderDetailResponse;
-import com.ecommerce.domain.order.model.OrderStatus;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,7 +42,7 @@ public class SellerController {
     }
 
     @GetMapping("/product")
-    public ResponseEntity<PageResponseDto<ProductResponse>> allSellingProduct(Pageable pageable) {
+    public ResponseEntity<PageResponseDto<ProductResponse>> allSellingProduct(@SortDefault(sort = "productId") Pageable pageable) {
         return ResponseEntity.ok(sellerService.findAllSellingProduct(pageable));
     }
 
@@ -65,7 +64,7 @@ public class SellerController {
 
     @GetMapping("/order")
     public ResponseEntity<PageResponseDto<SellerOrderDetailResponse>> getSellerOrders
-            (@SortDefault(sort = "orderId") Pageable pageable) {
+            (@SortDefault(sort = "status") Pageable pageable) {
         return ResponseEntity.ok(sellerService.getAllOrders(pageable));
     }
 
@@ -76,7 +75,7 @@ public class SellerController {
 
     @GetMapping("/order/status/{status}")
     public ResponseEntity<PageResponseDto<SellerOrderDetailResponse>> getOrdersByStatus
-            (@PathVariable OrderStatus status, @SortDefault(sort = "productDiscount", direction = Sort.Direction.ASC) Pageable pageable) {
+            (@PathVariable OrderStatus status, @SortDefault(sort = "orderDetailId") Pageable pageable) {
         return ResponseEntity.ok(sellerService.getOrderByStatus(status, pageable));
     }
 

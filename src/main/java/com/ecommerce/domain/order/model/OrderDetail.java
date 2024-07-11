@@ -18,6 +18,7 @@ public class OrderDetail {
     @EmbeddedId
     private OrderDetailId orderDetailId;
 
+    @Column(name = "order_detail_status")
     private OrderStatus orderDetailStatus;
 
     @Column(name = "product_quantity")

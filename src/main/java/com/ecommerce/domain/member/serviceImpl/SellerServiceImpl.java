@@ -22,6 +22,7 @@ import com.ecommerce.domain.product.exception.ProductException;
 import com.ecommerce.domain.product.model.Product;
 import com.ecommerce.domain.product.repository.CategoryRepository;
 import com.ecommerce.domain.product.repository.ProductRepository;
+import com.ecommerce.domain.security.exception.MemberException;
 import com.ecommerce.domain.security.model.Member;
 import com.ecommerce.domain.security.model.Role;
 import com.ecommerce.domain.security.model.RoleName;
@@ -60,6 +61,10 @@ public class SellerServiceImpl implements SellerService {
     public MessageResponse sellerSignUp(SellerSignUpRequest sellerSignUpRequest) {
         UserDetailImpl memberDetail = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Member member = memberRepository.findByMemberId(memberDetail.getId());
+        if (member == null) {
+            throw MemberException.notFound("No member found");
+        }
+
         Role roleSeller = roleService.findByRoleName(RoleName.ROLE_SELLER);
         if (member.getRoles().contains(roleSeller)){
             throw SellerException.badRequest("Member already is seller");
@@ -85,6 +90,10 @@ public class SellerServiceImpl implements SellerService {
     public MessageResponse sellerSignIn() {
         UserDetailImpl memberDetail = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Member member = memberRepository.findByMemberId(memberDetail.getId());
+        if (member == null) {
+            throw MemberException.notFound("No member found");
+        }
+
         if (!member.getRoles().contains(roleService.findByRoleName(RoleName.ROLE_SELLER))){
             throw new SellerException("Member did not register to be a seller!");
         }
@@ -126,8 +135,12 @@ public class SellerServiceImpl implements SellerService {
     public ProductResponse findSellingProduct(String sku) {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Product product = productRepository.findByProductSku(sku);
+        if (product == null) {
+            throw ProductException.notFound("No product with sku " + sku + " found");
+        }
+
         if(!Objects.equals(userDetails.getId(), product.getSeller().getSellerId())) {
-            throw ProductException.notFound("No product of this sku found");
+            throw ProductException.forbidden("You are not authorized to view this product");
         }
         return modelMapper.map(product, ProductResponse.class);
     }
@@ -137,6 +150,10 @@ public class SellerServiceImpl implements SellerService {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         List<Product> productList = productRepository.findAllBySellerSellerId(userDetails.getId());
+        if (productList.isEmpty()) {
+            throw ProductException.notFound("You have no product");
+        }
+
         for(Product product:productList) {
             if (Objects.equals(product.getProductName(), request.getProductName())) {
                 throw ProductException.conflict("You already have a product of this name. Please choose another product name");
@@ -195,7 +212,8 @@ public class SellerServiceImpl implements SellerService {
             productRepository.save(product);
         }
         ProductResponse response = modelMapper.map(product, ProductResponse.class);
-        response.setShopName(product.getSeller().getShopName());
+        response.setShopName(product.getSeller()
+                .getShopName());
         return response;
     }
 
@@ -244,6 +262,9 @@ public class SellerServiceImpl implements SellerService {
     // get OD by Id
     public List<SellerOrderDetailResponse> getOrderById(Long orderId) {
         List<OrderDetail> orderDetails = getOrderByIdFromSeller(orderId);
+        if (orderDetails.isEmpty()) {
+            throw OrderException.notFound("Your shop has no order");
+        }
         // ALWAYS REMEMBER TO SET ORDER STATUS
         return orderDetails.stream()
                 .map(orderDetail -> {
@@ -254,10 +275,11 @@ public class SellerServiceImpl implements SellerService {
                 .toList();
     }
 
+    // Get all DELIVERED orders
     @Override
     public PageResponseDto<SellerOrderDetailResponse> getOrderByStatus(OrderStatus status, Pageable pageable) {
         List<Long> productIds = getProductIds();
-        Page<OrderDetail> orderDetailPage = orderDetailRepository.findAllByProductProductIdInAndOrderOrderStatus(productIds, status, pageable);
+        Page<OrderDetail> orderDetailPage = orderDetailRepository.findAllByProductProductIdInAndOrderDetailStatus(productIds, status, pageable);
 
         if (orderDetailPage.isEmpty()) {
             throw OrderException.notFound("No orders found for your products with status " + status);
@@ -369,6 +391,9 @@ public class SellerServiceImpl implements SellerService {
     private List<Long> getProductIds() {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Product> products = productRepository.findAllBySellerSellerId(userDetails.getId());
+        if (userDetails.getId() == null) {
+            throw MemberException.notFound(" no mem");
+        }
         if (products.isEmpty()) {
             throw ProductException.notFound("Your shop has no product");
         }

@@ -11,7 +11,6 @@ import com.ecommerce.domain.shoppingCart.serviceImpl.CartServiceImpl;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +25,7 @@ public class CartController {
 
     @GetMapping("/list")
     public ResponseEntity<PageResponseDto<CartResponse>> findAllCart(
-            @SortDefault(sort = "shoppingCartId", direction = Sort.Direction.ASC) Pageable pageable){
+            @SortDefault(sort = "shoppingCartId") Pageable pageable){
         return ResponseEntity.ok(cartService.findAllCart(pageable));
     }
 

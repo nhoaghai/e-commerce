@@ -8,7 +8,6 @@ import com.ecommerce.domain.shoppingCart.serviceImpl.WishListServiceImpl;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +21,7 @@ public class WishListController {
 
     @GetMapping("/show")
     public ResponseEntity<PageResponseDto<WishListResponse>> getAllWishItems(
-            @SortDefault(sort = "wishListId", direction = Sort.Direction.ASC) Pageable pageable) {
+            @SortDefault(sort = "wishListId") Pageable pageable) {
         return ResponseEntity.ok(wishListService.getAllWistlistItems(pageable));
     }
 
