@@ -32,8 +32,8 @@ public class AdminController {
     }
 
     @PostMapping("/category/new-category")
-    public ResponseEntity<CategoryResponse> addNewCategory(@RequestBody CategoryRequest request) {
-        return ResponseEntity.ok(categoryService.addNewCategory(request));
+    public ResponseEntity<CategoryResponse> addNewCategory(@RequestBody CategoryRequest categoryRequest) {
+        return ResponseEntity.ok(categoryService.addNewCategory(categoryRequest));
     }
 
     @DeleteMapping("/category/delete-category")

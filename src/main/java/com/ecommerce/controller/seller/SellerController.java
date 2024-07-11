@@ -64,7 +64,7 @@ public class SellerController {
 
     @GetMapping("/order")
     public ResponseEntity<PageResponseDto<SellerOrderDetailResponse>> getSellerOrders
-            (@SortDefault(sort = "status") Pageable pageable) {
+            (@SortDefault(sort = "orderDetailStatus") Pageable pageable) {
         return ResponseEntity.ok(sellerService.getAllOrders(pageable));
     }
 

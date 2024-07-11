@@ -72,7 +72,8 @@ public class OrderServiceImpl implements OrderService {
             Product product = productRepository.findByProductId(cart.getProduct().getProductId());
 
             OrderDetail orderDetail = new OrderDetail();
-            orderDetail.setProductQuantity(request.getProductQuantity());
+            if (request.getProductQuantity().equals(cart.getProductQuantity()))
+                orderDetail.setProductQuantity(request.getProductQuantity());
             orderDetail.setProduct(product);
             OrderDetailId orderDetailId = new OrderDetailId(product.getProductId(), order.getOrderId());
             orderDetail.setOrder(order);

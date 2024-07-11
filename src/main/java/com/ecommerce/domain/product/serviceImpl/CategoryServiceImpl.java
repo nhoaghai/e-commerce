@@ -72,17 +72,22 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryResponse addNewCategory(CategoryRequest categoryRequest) {
-        Category category = categoryRepository.findByCategoryId(categoryRequest.getCategoryId());
-        if (category == null){
-            //add new
-            categoryRepository.save(modelMapper.map(categoryRequest, Category.class));
-        } else {
-            //update
-            category.setCategoryName(categoryRequest.getCategoryName());
-            category.setDescription(categoryRequest.getDescription());
+        if (categoryRequest.getCategoryId() == null) {
+            throw CategoryException.badRequest("Please enter category ID");
         }
+        if (categoryRequest.getCategoryName() == null) {
+            throw CategoryException.badRequest("Please enter category name");
+        }
+        if (categoryRequest.getDescription() == null) {
+            throw CategoryException.badRequest("Please enter category description");
+        }
+
+        Category category = modelMapper.map(categoryRequest, Category.class);
+        category.setActive(true);
+        categoryRepository.save(category);
         return modelMapper.map(category, CategoryResponse.class);
     }
+
 
     @Override
     public List<CategoryResponse> updateCategory(List<CategoryRequest> categoryRequest) {

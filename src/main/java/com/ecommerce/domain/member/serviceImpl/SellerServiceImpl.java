@@ -150,26 +150,29 @@ public class SellerServiceImpl implements SellerService {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         List<Product> productList = productRepository.findAllBySellerSellerId(userDetails.getId());
-        if (productList.isEmpty()) {
-            throw ProductException.notFound("You have no product");
-        }
 
-        for(Product product:productList) {
-            if (Objects.equals(product.getProductName(), request.getProductName())) {
-                throw ProductException.conflict("You already have a product of this name. Please choose another product name");
+        // Check existing products for overlap with requested product (when the shop HAS any product)
+        if (!productList.isEmpty()) {
+            for(Product product:productList) {
+                if (Objects.equals(product.getProductName(), request.getProductName())) {
+                    throw ProductException.conflict("You already have a product of this name. Please choose another product name");
+                }
             }
         }
 
         Product product = modelMapper.map(request, Product.class);
         product.setActive(true);
         product.setSku(generateRandomSKU());
-        product.setSeller(sellerRepository.findByMemberMemberId(userDetails.getId()));
+        Seller seller = sellerRepository.findByMemberMemberId(userDetails.getId());
+        product.setSeller(seller);
         product.setCreateAt(LocalDateTime.now());
         product.setCategory(categoryRepository.findByCategoryName(request.getCategoryName()));
 
         productRepository.save(product);
 
-        return modelMapper.map(product, ProductResponse.class);
+        ProductResponse response = modelMapper.map(product, ProductResponse.class);
+        response.setShopName(seller.getShopName());
+        return response;
     }
 
     public static String generateRandomSKU() {
