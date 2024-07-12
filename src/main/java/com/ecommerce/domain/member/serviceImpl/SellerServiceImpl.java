@@ -352,23 +352,6 @@ public class SellerServiceImpl implements SellerService {
         orderDetail.setOrderDetailStatus(odStatus);
         orderDetailRepository.save(orderDetail);
 
-        // DELIVERY: change the whole order's status when the last seller in an order updates the OD to DELIVERY
-        if (odStatus.equals(OrderStatus.DELIVERY)) {
-
-            Order order = orderRepository.findById(odID.getOrderId())
-                    .orElseThrow(() -> OrderException.notFound("No order found"));
-            List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder(order);
-
-            boolean allDelivered = false;
-            for (OrderDetail od : orderDetails) {
-                allDelivered = getOrderDetailStatus(od).equals(OrderStatus.DELIVERY);
-            }
-
-            if (allDelivered) {
-                order.setOrderStatus(OrderStatus.DELIVERY);
-                orderRepository.save(order);
-            }
-        }
 
         // DENY: update order's total price
         if (odStatus.equals(OrderStatus.DENIED)) {
@@ -376,9 +359,10 @@ public class SellerServiceImpl implements SellerService {
                     .orElseThrow(() -> OrderException.notFound("No order found"));
 
             Product product = orderDetail.getProduct();
-                if (product == null)
-                { throw ProductException.notFound("The product for this order doesn't exist. " +
-                        "Likely out of stock. Contact seller for more info.");}
+                if (product == null) {
+                    throw ProductException.notFound("The product for this order doesn't exist. " +
+                        "Likely out of stock. Contact seller for more info.");
+                }
 
             BigDecimal deniedOrderPrice = product.getUnitPrice()
                     .multiply(BigDecimal.valueOf(orderDetail.getProductQuantity()))
@@ -387,6 +371,9 @@ public class SellerServiceImpl implements SellerService {
             order.setTotalPrice(order.getTotalPrice().subtract(deniedOrderPrice));
             orderRepository.save(order);
         }
+
+        // Synchronize the total order's status when all order details are of the same stt
+        syncAllStatus(odID, odStatus);
 
         return modelMapper.map(orderDetail, SellerOrderDetailResponse.class);
     }
@@ -440,6 +427,25 @@ public class SellerServiceImpl implements SellerService {
             throw OrderException.forbidden("Unauthorized to view this order: no product here belongs to your shop");
 
         return sellerOrderDetails;
+    }
+
+    private void syncAllStatus(OrderDetailId odID, OrderStatus statusToCheck) {
+        Order order = orderRepository.findById(odID.getOrderId())
+                .orElseThrow(() -> OrderException.notFound("No order found"));
+        List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder(order);
+
+        boolean allSameStatus = true;
+        for (OrderDetail od : orderDetails) {
+            if (!getOrderDetailStatus(od).equals(statusToCheck)) {
+                allSameStatus = false;
+                break;
+            }
+        }
+
+        if (allSameStatus) {
+            order.setOrderStatus(statusToCheck);
+            orderRepository.save(order);
+        }
     }
 
 }
