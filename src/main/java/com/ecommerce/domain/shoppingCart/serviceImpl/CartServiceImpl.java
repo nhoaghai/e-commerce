@@ -38,7 +38,7 @@ public class CartServiceImpl implements CartService {
 
         if (carts.isEmpty()){
             throw CartException.notFound("No products in your cart!");
-        }else {
+        } else{
             PageResponseDto<CartResponse> pageRDTO = new PageResponseDto<>();
             List<CartResponse> cartData = carts.getContent().stream()
                     .map(cartMapper::cartMappingToResponse

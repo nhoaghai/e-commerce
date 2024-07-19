@@ -142,6 +142,11 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse confirmOrder(String sku) {
         Order order = orderRepository.findFirstBySerialNumber(sku);
+
+        if(order == null) {
+            throw OrderException.notFound("Cannot find order with that sku!");
+        }
+
         checkValidUser(order.getMember().getMemberId());
         if(order.getOrderStatus() == OrderStatus.DELIVERY) {
             List<OrderDetail> orderDetailList = orderDetailRepository.findAllByOrder(order);
@@ -161,12 +166,21 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse cancelOrder(String sku) {
         Order order = orderRepository.findFirstBySerialNumber(sku);
+        if(order == null) {
+            throw OrderException.notFound("Cannot find order of this sku");
+        }
+
         checkValidUser(order.getMember().getMemberId());
         if(order.getOrderStatus() == OrderStatus.WAITING) {
             List<OrderDetail> orderDetailList = orderDetailRepository.findAllByOrder(order);
             for(OrderDetail orderDetail: orderDetailList) {
                 orderDetail.setOrderDetailStatus(OrderStatus.CANCEL);
                 orderDetailRepository.save(orderDetail);
+
+                // update stock quantity
+                Product product = orderDetail.getProduct();
+                product.setStockQuantity(product.getStockQuantity() + orderDetail.getProductQuantity());
+                productRepository.save(product);
             }
             order.setOrderStatus(OrderStatus.CANCEL);
             orderRepository.save(order);

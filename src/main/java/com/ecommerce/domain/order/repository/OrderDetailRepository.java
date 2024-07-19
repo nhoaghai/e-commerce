@@ -15,6 +15,8 @@ import java.util.List;
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, OrderDetailId> {
     List<OrderDetail> findAllByOrder(Order order);
 
+    //Optional<OrderDetail> findAllByOrder(Order order);
+
     List<OrderDetail> findAllByProductProductIdInAndOrderOrderStatus(List<Long> productIds, OrderStatus status);
 
     Page<OrderDetail> findAllByProductProductIdIn(List<Long> productIds, Pageable pageable);

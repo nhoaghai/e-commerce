@@ -8,11 +8,9 @@ import com.ecommerce.domain.member.model.Seller;
 import com.ecommerce.domain.member.repository.AddressRepository;
 import com.ecommerce.domain.member.repository.SellerRepository;
 import com.ecommerce.domain.security.dto.request.AccountRequest;
-import com.ecommerce.domain.member.dto.request.AddressRequest;
 import com.ecommerce.domain.security.dto.request.ChangeAvatarRequest;
 import com.ecommerce.domain.security.dto.request.ChangePasswordRequest;
 import com.ecommerce.domain.security.dto.response.AccountResponse;
-import com.ecommerce.domain.member.dto.response.AddressResponse;
 import com.ecommerce.domain.security.exception.MemberException;
 import com.ecommerce.domain.security.jwt.JwtProvider;
 import com.ecommerce.domain.security.model.Member;
@@ -20,7 +18,6 @@ import com.ecommerce.domain.security.model.Role;
 import com.ecommerce.domain.security.model.RoleName;
 import com.ecommerce.domain.security.model.Token;
 import com.ecommerce.domain.security.repository.MemberRepository;
-import com.ecommerce.domain.security.repository.RoleRepository;
 import com.ecommerce.domain.security.repository.TokenRepository;
 import com.ecommerce.domain.security.service.MemberService;
 import com.ecommerce.domain.security.serviceImpl.jwtService.UserDetailImpl;
@@ -58,7 +55,7 @@ public class MemberServiceImpl implements MemberService {
                 .map(member -> {
                     AccountResponse response = modelMapper.map(member, AccountResponse.class);
                     response.setAddress(addressRepository.findByMemberMemberId(member.getMemberId()).stream()
-                            .map(address -> address.getFullAddress()).toList());
+                            .map(Address::getFullAddress).toList());
                     response.setRoles(memberRepository.findByMemberId(member.getMemberId()).getRoles());
                     return response;
                 })
@@ -78,7 +75,7 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findByMemberId(memberDetail.getId());
         AccountResponse response = modelMapper.map(member, AccountResponse.class);
         response.setAddress(addressRepository.findByMemberMemberId(member.getMemberId()).stream()
-                .map(address -> address.getFullAddress()).toList());
+                .map(Address::getFullAddress).toList());
         response.setRoles(memberRepository.findByMemberId(member.getMemberId()).getRoles());
         return response;
     }
@@ -101,7 +98,7 @@ public class MemberServiceImpl implements MemberService {
                 .map(member -> {
                     AccountResponse response = modelMapper.map(member, AccountResponse.class);
                     response.setAddress(addressRepository.findByMemberMemberId(member.getMemberId()).stream()
-                            .map(address -> address.getFullAddress()).toList());
+                            .map(Address::getFullAddress).toList());
                     response.setRoles(memberRepository.findByMemberId(member.getMemberId()).getRoles());
                     return response;
                 })

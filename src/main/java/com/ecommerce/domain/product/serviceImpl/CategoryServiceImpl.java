@@ -109,11 +109,11 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryResponse deleteCategory(CategoryRequest categoryRequest) {
         Category category = categoryRepository.findByCategoryId(categoryRequest.getCategoryId());
         if(category == null) {
-            throw new DomainException("This category does not exist");
+            throw new CategoryException("This category does not exist");
         }
         List<Product> products = productRepository.findAllByCategoryCategoryId(category.getCategoryId());
         if(!products.isEmpty()) {
-            throw new DomainException("There are products in this category");
+            throw new CategoryException("There are products in this category");
         }
         categoryRepository.delete(category);
         return modelMapper.map(category, CategoryResponse.class);
