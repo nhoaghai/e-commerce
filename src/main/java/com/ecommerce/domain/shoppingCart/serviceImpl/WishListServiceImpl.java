@@ -51,7 +51,7 @@ public class WishListServiceImpl implements WishListService {
     @Override
     public WishListResponse addProductToWishList(WishListRequest request) {
         checkValidUser(request.getMemberId());
-        WishList wishList = wishListRepository.findFirstByProductProductId(request.getProductId());
+        WishList wishList = wishListRepository.findFirstByProductProductId(request.getProductId()).orElseThrow(()-> new WishListException("WishList not found!"));
         // Case 1: wishList doesn't exist yet
         // --> Create a new wish list out of the req and add the product to it
         if (wishList == null) {

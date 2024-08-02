@@ -3,6 +3,7 @@ package com.ecommerce.domain.shoppingCart.dto.mapper;
 import com.ecommerce.common.exception.DomainException;
 import com.ecommerce.domain.product.model.Product;
 import com.ecommerce.domain.product.repository.ProductRepository;
+import com.ecommerce.domain.security.exception.MemberException;
 import com.ecommerce.domain.security.model.Member;
 import com.ecommerce.domain.security.repository.MemberRepository;
 import com.ecommerce.domain.security.serviceImpl.jwtService.UserDetailImpl;
@@ -32,7 +33,7 @@ public class CartMapper {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         ShoppingCart cart = new ShoppingCart();
         Product product = productRepository.findById(request.getProductId()).orElse(null);
-        Member member = memberRepository.findByMemberId(userDetails.getId());
+        Member member = memberRepository.findByMemberId(userDetails.getId()).orElseThrow(()-> new MemberException("Member not found!"));
         cart.setProductQuantity(request.getProductQuantity());
         cart.setProduct(product);
         cart.setMember(member);

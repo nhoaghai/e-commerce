@@ -9,14 +9,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     List<Category> findAllByCategoryNameContainingOrDescriptionContaining(String name, String des);
 
-    Category findByCategoryId(Long categoryId);
+    Optional<Category> findByCategoryId(Long categoryId);
 
-    Category findByCategoryName(String categoryName);
+    Optional<Category> findByCategoryName(String categoryName);
 
     @Query(value = "SELECT c from Category c where c.isActive = true")
     Page<Category> findCategoriesByActive(Pageable pageable);

@@ -3,6 +3,7 @@ package com.ecommerce.domain.security.serviceImpl;
 import com.ecommerce.common.util.MessageResponse;
 import com.ecommerce.common.util.PageResponseDto;
 import com.ecommerce.common.util.UploadService;
+import com.ecommerce.domain.member.exception.SellerException;
 import com.ecommerce.domain.member.model.Address;
 import com.ecommerce.domain.member.model.Seller;
 import com.ecommerce.domain.member.repository.AddressRepository;
@@ -12,6 +13,7 @@ import com.ecommerce.domain.security.dto.request.ChangeAvatarRequest;
 import com.ecommerce.domain.security.dto.request.ChangePasswordRequest;
 import com.ecommerce.domain.security.dto.response.AccountResponse;
 import com.ecommerce.domain.security.exception.MemberException;
+import com.ecommerce.domain.security.exception.TokenException;
 import com.ecommerce.domain.security.jwt.JwtProvider;
 import com.ecommerce.domain.security.model.Member;
 import com.ecommerce.domain.security.model.Role;
@@ -56,7 +58,7 @@ public class MemberServiceImpl implements MemberService {
                     AccountResponse response = modelMapper.map(member, AccountResponse.class);
                     response.setAddress(addressRepository.findByMemberMemberId(member.getMemberId()).stream()
                             .map(Address::getFullAddress).toList());
-                    response.setRoles(memberRepository.findByMemberId(member.getMemberId()).getRoles());
+                    response.setRoles(memberRepository.findByMemberId(member.getMemberId()).orElseThrow(()-> new MemberException("Member not found!")).getRoles());
                     return response;
                 })
                 .toList();
@@ -72,11 +74,11 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public AccountResponse getMemberInfo() {
         UserDetailImpl memberDetail = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Member member = memberRepository.findByMemberId(memberDetail.getId());
+        Member member = memberRepository.findByMemberId(memberDetail.getId()).orElseThrow(()-> new MemberException("Member not found!"));
         AccountResponse response = modelMapper.map(member, AccountResponse.class);
         response.setAddress(addressRepository.findByMemberMemberId(member.getMemberId()).stream()
                 .map(Address::getFullAddress).toList());
-        response.setRoles(memberRepository.findByMemberId(member.getMemberId()).getRoles());
+        response.setRoles(memberRepository.findByMemberId(member.getMemberId()).orElseThrow(()-> new MemberException("Member not found!")).getRoles());
         return response;
     }
 
@@ -99,7 +101,7 @@ public class MemberServiceImpl implements MemberService {
                     AccountResponse response = modelMapper.map(member, AccountResponse.class);
                     response.setAddress(addressRepository.findByMemberMemberId(member.getMemberId()).stream()
                             .map(Address::getFullAddress).toList());
-                    response.setRoles(memberRepository.findByMemberId(member.getMemberId()).getRoles());
+                    response.setRoles(memberRepository.findByMemberId(member.getMemberId()).orElseThrow(()-> new MemberException("Member not found!")).getRoles());
                     return response;
                 })
                 .toList();
@@ -114,7 +116,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public AccountResponse addNewRoleToMember(String memberId, RoleName roleName) {
-        Member member = memberRepository.findByMemberId(memberId);
+        Member member = memberRepository.findByMemberId(memberId).orElseThrow(()-> new MemberException("Member not found!"));
         Role role = roleService.findByRoleName(roleName);
         if (member.getRoles().contains(role)) {
             throw MemberException.conflict("Member " + member.getFullName() + " already had this role");
@@ -126,7 +128,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public AccountResponse deleteRoleOfMember(String memberId, RoleName roleName) {
-        Member member = memberRepository.findByMemberId(memberId);
+        Member member = memberRepository.findByMemberId(memberId).orElseThrow(()-> new MemberException("Member not found!"));
         Role role = roleService.findByRoleName(roleName);
         if (!member.getRoles().contains(role)) {
             throw MemberException.notFound("Member " + member.getFullName() + " does not have this role");
@@ -138,7 +140,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public MessageResponse toggleMemberStatusById(String memberId) {
-        Member member = memberRepository.findByMemberId(memberId);
+        Member member = memberRepository.findByMemberId(memberId).orElseThrow(()-> new MemberException("Member not found!"));
         member.setActive(!member.isActive());
         memberRepository.save(member);
         return MessageResponse.builder()
@@ -149,12 +151,13 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public MessageResponse toggleSellerStatusById(String memberId) {
-        Member member = memberRepository.findByMemberId(memberId);
+        Member member = memberRepository.findByMemberId(memberId).orElseThrow(()-> new MemberException("Member not found!"));
         Role roleSeller = roleService.findByRoleName(RoleName.ROLE_SELLER);
         if (!member.getRoles().contains(roleSeller)){
             throw MemberException.notFound("Member " + member.getFullName() + " does not have this role");
         }
-        Seller seller = sellerRepository.findByMemberMemberId(memberId);
+        Seller seller = sellerRepository.findByMemberMemberId(memberId)
+                .orElseThrow(()-> new SellerException("Seller not found!"));
         seller.setActive(!seller.isActive());
         sellerRepository.save(seller);
         return MessageResponse.builder()
@@ -171,7 +174,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public MessageResponse changePassword(ChangePasswordRequest changePasswordRequest) {
         UserDetailImpl memberDetail = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Member member = memberRepository.findByMemberId(memberDetail.getId());
+        Member member = memberRepository.findByMemberId(memberDetail.getId()).orElseThrow(()-> new MemberException("Member not found!"));
 
         boolean checkOldPassword = passwordEncoder.matches(changePasswordRequest.getOldPassword(), member.getPassword());
         if (checkOldPassword) {
@@ -189,7 +192,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public AccountResponse updateProfile(AccountRequest accountRequest) {
         UserDetailImpl memberDetail = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Member member = memberRepository.findByMemberId(memberDetail.getId());
+        Member member = memberRepository.findByMemberId(memberDetail.getId()).orElseThrow(()-> new MemberException("Member not found!"));
 
         if (accountRequest.getEmail() != null && !accountRequest.getEmail().isEmpty()) {
             member.setEmail(accountRequest.getEmail());
@@ -217,7 +220,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public MessageResponse changeAvatar(ChangeAvatarRequest changeAvatarRequest) {
         UserDetailImpl memberDetail = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Member member = memberRepository.findByMemberId(memberDetail.getId());
+        Member member = memberRepository.findByMemberId(memberDetail.getId()).orElseThrow(()-> new MemberException("Member not found!"));
         member.setAvatarUrl(uploadService.uploadFile(changeAvatarRequest.getAvatarUrl()));
         member.setUpdateAt(LocalDateTime.now());
         memberRepository.save(member);
@@ -229,7 +232,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public Member getUserDetailsFromRefreshToken(String token) throws Exception {
-        Token existingToken = tokenRepository.findByRefreshToken(token);
+        Token existingToken = tokenRepository.findByRefreshToken(token).orElseThrow(()-> new TokenException("Token not found!"));
         return getUserDetailFromToken(existingToken.getTokenType());
     }
 

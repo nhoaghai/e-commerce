@@ -56,7 +56,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public CartResponse addNewProductIntoCart(CartRequest cartRequest) {
         checkValidUser(cartRequest.getMemberId());
-        ShoppingCart cart = cartRepository.findFirstByProductProductId(cartRequest.getProductId());
+        ShoppingCart cart = cartRepository.findFirstByProductProductId(cartRequest.getProductId()).orElseThrow(()-> new CartException("Shopping cart not found!"));
         if(cart == null) {
             cart = cartMapper.cartRequestMappingToCart(cartRequest);
             errorHandler(cart, cartRequest);
@@ -77,7 +77,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public CartResponse changeProductQuantityInCart(CartRequest cartRequest) {
         checkValidUser(cartRequest.getMemberId());
-        ShoppingCart cart = cartRepository.findFirstByProductProductId(cartRequest.getProductId());
+        ShoppingCart cart = cartRepository.findFirstByProductProductId(cartRequest.getProductId()).orElseThrow(()-> new CartException("Shopping cart not found!"));
         if(cart != null) {
             errorHandler(cart, cartRequest);
             // Add product quantity if product is already in cart

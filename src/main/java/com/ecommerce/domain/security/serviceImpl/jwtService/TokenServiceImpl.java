@@ -1,5 +1,6 @@
 package com.ecommerce.domain.security.serviceImpl.jwtService;
 
+import com.ecommerce.domain.security.exception.TokenException;
 import com.ecommerce.domain.security.jwt.JwtProvider;
 import com.ecommerce.domain.security.model.Member;
 import com.ecommerce.domain.security.model.Token;
@@ -77,7 +78,7 @@ public class TokenServiceImpl implements TokenService {
     @Transactional
     @Override
     public Token refreshToken(String refreshToken, Member member) throws Exception {
-        Token existingToken = tokenRepository.findByRefreshToken(refreshToken);
+        Token existingToken = tokenRepository.findByRefreshToken(refreshToken).orElseThrow(()-> new TokenException("Token not found!"));
         if (existingToken == null){
             throw new Exception("Refresh token does not exist!");
         }

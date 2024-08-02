@@ -18,6 +18,7 @@ import com.ecommerce.domain.order.repository.OrderDetailRepository;
 import com.ecommerce.domain.order.repository.OrderRepository;
 import com.ecommerce.domain.product.dto.request.ProductRequest;
 import com.ecommerce.domain.product.dto.response.ProductResponse;
+import com.ecommerce.domain.product.exception.CategoryException;
 import com.ecommerce.domain.product.exception.ProductException;
 import com.ecommerce.domain.product.model.Product;
 import com.ecommerce.domain.product.repository.CategoryRepository;
@@ -37,6 +38,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import javax.xml.catalog.CatalogException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -60,13 +62,13 @@ public class SellerServiceImpl implements SellerService {
     @Override
     public MessageResponse sellerSignUp(SellerSignUpRequest sellerSignUpRequest) {
         UserDetailImpl memberDetail = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Member member = memberRepository.findByMemberId(memberDetail.getId());
+        Member member = memberRepository.findByMemberId(memberDetail.getId()).orElseThrow(()-> new MemberException("Member not found!"));
         if (member == null) {
             throw MemberException.notFound("No member found");
         }
 
         Role roleSeller = roleService.findByRoleName(RoleName.ROLE_SELLER);
-        if (member.getRoles().contains(roleSeller)){
+        if (member.getRoles().contains(roleSeller)) {
             throw SellerException.badRequest("Member already is seller");
         }
         member.getRoles().add(roleSeller);
@@ -89,16 +91,17 @@ public class SellerServiceImpl implements SellerService {
     @Override
     public MessageResponse sellerSignIn() {
         UserDetailImpl memberDetail = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Member member = memberRepository.findByMemberId(memberDetail.getId());
+        Member member = memberRepository.findByMemberId(memberDetail.getId()).orElseThrow(()-> new MemberException("Member not found!"));
         if (member == null) {
             throw MemberException.notFound("No member found");
         }
 
-        if (!member.getRoles().contains(roleService.findByRoleName(RoleName.ROLE_SELLER))){
+        if (!member.getRoles().contains(roleService.findByRoleName(RoleName.ROLE_SELLER))) {
             throw new SellerException("Member did not register to be a seller!");
         }
 
-        Seller seller = sellerRepository.findByMemberMemberId(memberDetail.getId());
+        Seller seller = sellerRepository.findByMemberMemberId(memberDetail.getId())
+                .orElseThrow(() -> new SellerException("Seller not found!"));
 
         if (!seller.isActive()) {
             throw new SellerException("Member was banned! Contact to admin to unlock!");
@@ -115,7 +118,7 @@ public class SellerServiceImpl implements SellerService {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Page<Product> page = productRepository.findAllBySellerSellerId(userDetails.getId(), pageable);
 
-        if (page.isEmpty()){
+        if (page.isEmpty()) {
             throw ProductException.notFound("No products is being sold!");
         } else {
             List<ProductResponse> data = page.stream()
@@ -139,7 +142,7 @@ public class SellerServiceImpl implements SellerService {
             throw ProductException.notFound("No product with sku " + sku + " found");
         }
 
-        if(!Objects.equals(userDetails.getId(), product.getSeller().getSellerId())) {
+        if (!Objects.equals(userDetails.getId(), product.getSeller().getSellerId())) {
             throw ProductException.forbidden("You are not authorized to view this product");
         }
         return modelMapper.map(product, ProductResponse.class);
@@ -153,7 +156,7 @@ public class SellerServiceImpl implements SellerService {
 
         // Check existing products for overlap with requested product (when the shop HAS any product)
         if (!productList.isEmpty()) {
-            for(Product product:productList) {
+            for (Product product : productList) {
                 if (Objects.equals(product.getProductName(), request.getProductName())) {
                     throw ProductException.conflict("You already have a product of this name. Please choose another product name");
                 }
@@ -163,10 +166,12 @@ public class SellerServiceImpl implements SellerService {
         Product product = modelMapper.map(request, Product.class);
         product.setActive(true);
         product.setSku(generateRandomSKU());
-        Seller seller = sellerRepository.findByMemberMemberId(userDetails.getId());
+        Seller seller = sellerRepository.findByMemberMemberId(userDetails.getId())
+                .orElseThrow(() -> new SellerException("Seller not found!"));
         product.setSeller(seller);
         product.setCreateAt(LocalDateTime.now());
-        product.setCategory(categoryRepository.findByCategoryName(request.getCategoryName()));
+        product.setCategory(categoryRepository.findByCategoryName(request.getCategoryName())
+                .orElseThrow(() -> new CategoryException("Category not found!")));
 
         productRepository.save(product);
 
@@ -228,7 +233,7 @@ public class SellerServiceImpl implements SellerService {
             productRepository.delete(product);
             return MessageResponse.builder()
                     .httpStatus(HttpStatus.OK)
-                    .message("Deleted "+ product.getProductName() + " with product ID " + productId + " successfully")
+                    .message("Deleted " + product.getProductName() + " with product ID " + productId + " successfully")
                     .build();
         }
     }
@@ -288,7 +293,7 @@ public class SellerServiceImpl implements SellerService {
             throw OrderException.notFound("No orders found for your products with status " + status);
         }
 
-        List<SellerOrderDetailResponse> orderDetailResponses =  orderDetailPage.getContent().stream()
+        List<SellerOrderDetailResponse> orderDetailResponses = orderDetailPage.getContent().stream()
                 .map(orderDetail -> {
                     SellerOrderDetailResponse odResponse = modelMapper.map(orderDetail, SellerOrderDetailResponse.class);
                     odResponse.setStatus(status);
@@ -324,7 +329,7 @@ public class SellerServiceImpl implements SellerService {
                     LocalDate receiveDate = LocalDate.from(ord.getOrder().getReceiveAt());
 
                     if (receiveDate.isAfter(startDate.minusDays(1))
-                        && receiveDate.isBefore(endDate.plusDays(1))) {
+                            && receiveDate.isBefore(endDate.plusDays(1))) {
                         BigDecimal orderDetailPrice = ord.getProduct().getUnitPrice()
                                 .multiply(BigDecimal.valueOf(ord.getProductQuantity()))
                                 .multiply(BigDecimal.valueOf(1 - (double) ord.getProduct().getDiscount() / 100));
@@ -359,14 +364,14 @@ public class SellerServiceImpl implements SellerService {
                     .orElseThrow(() -> OrderException.notFound("No order found"));
 
             Product product = orderDetail.getProduct();
-                if (product == null) {
-                    throw ProductException.notFound("The product for this order doesn't exist. " +
+            if (product == null) {
+                throw ProductException.notFound("The product for this order doesn't exist. " +
                         "Likely out of stock. Contact seller for more info.");
-                }
+            }
 
             BigDecimal deniedOrderPrice = product.getUnitPrice()
                     .multiply(BigDecimal.valueOf(orderDetail.getProductQuantity()))
-                    .multiply(BigDecimal.valueOf(1-(product.getDiscount()/100)));
+                    .multiply(BigDecimal.valueOf(1 - (product.getDiscount() / 100)));
 
             order.setTotalPrice(order.getTotalPrice().subtract(deniedOrderPrice));
             orderRepository.save(order);
@@ -401,10 +406,10 @@ public class SellerServiceImpl implements SellerService {
         return oddStatus;
     }
 
-    private Product checkProductOwnership(Long productId){
+    private Product checkProductOwnership(Long productId) {
         UserDetailImpl memberDetail = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Member member = memberRepository.findByMemberId(memberDetail.getId());
-        return productRepository.findBySellerSellerIdAndProductId(member.getMemberId(), productId);
+        Member member = memberRepository.findByMemberId(memberDetail.getId()).orElseThrow(()-> new MemberException("Member not found!"));
+        return productRepository.findBySellerSellerIdAndProductId(member.getMemberId(), productId).orElseThrow(() -> new ProductException("Product not found!"));
     }
 
     private List<OrderDetail> getOrderByIdFromSeller(Long orderId) {

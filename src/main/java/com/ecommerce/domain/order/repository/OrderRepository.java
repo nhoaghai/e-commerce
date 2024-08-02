@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
@@ -18,7 +19,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findAllByMemberMemberIdAndOrderStatusIsIn(String id, List<OrderStatus> orderStatus);
 
-    Order findFirstBySerialNumber(String serial);
+    Optional<Order> findFirstBySerialNumber(String serial);
 
     List<Order> findAllByOrderStatusAndMemberMemberId(OrderStatus orderStatus, String memberId);
 

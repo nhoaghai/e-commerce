@@ -2,6 +2,7 @@ package com.ecommerce.domain.shoppingCart.dto.mapper;
 
 import com.ecommerce.domain.product.model.Product;
 import com.ecommerce.domain.product.repository.ProductRepository;
+import com.ecommerce.domain.security.exception.MemberException;
 import com.ecommerce.domain.security.model.Member;
 import com.ecommerce.domain.security.repository.MemberRepository;
 import com.ecommerce.domain.security.serviceImpl.jwtService.UserDetailImpl;
@@ -33,7 +34,7 @@ public class WishListMapper {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         WishList wishList = new WishList();
         Product product = productRepository.findById(request.getProductId()).orElse(null);
-        Member member = memberRepository.findByMemberId(userDetails.getId());
+        Member member = memberRepository.findByMemberId(userDetails.getId()).orElseThrow(()-> new MemberException("Member not found!"));
         wishList.setProduct(product);
         wishList.setMember(member);
         return wishList;

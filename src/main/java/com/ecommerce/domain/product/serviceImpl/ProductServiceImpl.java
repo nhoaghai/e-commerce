@@ -2,6 +2,7 @@ package com.ecommerce.domain.product.serviceImpl;
 
 import com.ecommerce.common.util.MessageResponse;
 import com.ecommerce.common.util.PageResponseDto;
+import com.ecommerce.domain.member.exception.SellerException;
 import com.ecommerce.domain.member.model.Seller;
 import com.ecommerce.domain.member.repository.SellerRepository;
 import com.ecommerce.domain.product.dto.request.ProductRequest;
@@ -62,9 +63,9 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductResponse> findAllByProductNameOrDes(String keyword) {
         List<Product> products = productRepository.findAllByProductNameContainingOrDescriptionContaining(keyword, keyword);
-        if (products.isEmpty()){
+        if (products.isEmpty()) {
             throw ProductException.notFound("No product found matching the search criteria");
-        }else {
+        } else {
             return products.stream()
                     .map(product -> {
                         ProductResponse response = modelMapper.map(product, ProductResponse.class);
@@ -79,9 +80,9 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductResponse> findAllByCategoryId(Long categoryId) {
         List<Product> products = productRepository.findAllByCategoryCategoryId(categoryId);
-        if (products.isEmpty()){
+        if (products.isEmpty()) {
             throw ProductException.notFound("No product found matching the categoryId");
-        }else {
+        } else {
             return products.stream()
                     .map(product -> {
                         ProductResponse response = modelMapper.map(product, ProductResponse.class);
@@ -95,10 +96,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse findByProductId(Long productId) {
-        Product product = productRepository.findByProductId(productId);
-        if (product == null){
+        Product product = productRepository.findByProductId(productId)
+                .orElseThrow(() -> new ProductException("Product not found!"));
+        if (product == null) {
             throw new ProductException("Not found product with sku");
-        }else {
+        } else {
             ProductResponse response = modelMapper.map(product, ProductResponse.class);
             response.setCategoryName(product.getCategory().getCategoryName());
             response.setShopName(product.getSeller().getShopName());
@@ -109,7 +111,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse findByProductSku(String sku) {
         Product product = productRepository.findByProductSku(sku);
-        if (product == null){
+        if (product == null) {
             throw new ProductException("Not found product with id");
         } else {
             ProductResponse response = modelMapper.map(product, ProductResponse.class);
@@ -121,11 +123,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ShopProductResponse> findAllShopProduct(String shopName) {
-        Seller seller = sellerRepository.findByShopName(shopName);
-        if(seller == null) {
+        Seller seller = sellerRepository.findByShopName(shopName)
+                .orElseThrow(() -> new SellerException("Seller not found!"));
+        if (seller == null) {
             throw new ProductException("No shop of this name found");
         }
-        List<Product> products = productRepository.findAllBySeller(sellerRepository.findByShopName(shopName));
+        List<Product> products = productRepository.findAllBySeller(sellerRepository.findByShopName(shopName).orElseThrow(() -> new SellerException("Seller not found!")));
         Set<Category> categories = products.stream()
                 .map(Product::getCategory)
                 .collect(Collectors.toSet());
@@ -139,11 +142,11 @@ public class ProductServiceImpl implements ProductService {
         });
 
         products.forEach(product -> {
-            ProductResponse response= modelMapper.map(product, ProductResponse.class);
+            ProductResponse response = modelMapper.map(product, ProductResponse.class);
             map.get(product.getCategory().getCategoryName()).add(response);
         });
 
-        for(String category: map.keySet()) {
+        for (String category : map.keySet()) {
             ShopProductResponse response = new ShopProductResponse();
             response.setCategory(category);
             response.setProducts(map.get(category));

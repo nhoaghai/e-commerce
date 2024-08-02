@@ -12,8 +12,10 @@ import com.ecommerce.domain.order.model.OrderStatus;
 import com.ecommerce.domain.order.repository.OrderDetailRepository;
 import com.ecommerce.domain.order.repository.OrderRepository;
 import com.ecommerce.domain.order.service.OrderService;
+import com.ecommerce.domain.product.exception.ProductException;
 import com.ecommerce.domain.product.model.Product;
 import com.ecommerce.domain.product.repository.ProductRepository;
+import com.ecommerce.domain.security.exception.MemberException;
 import com.ecommerce.domain.security.repository.MemberRepository;
 import com.ecommerce.domain.security.serviceImpl.jwtService.UserDetailImpl;
 import com.ecommerce.domain.shoppingCart.dto.request.CheckoutRequest;
@@ -57,7 +59,7 @@ public class OrderServiceImpl implements OrderService {
         order.setReceivePhone(orderRequest.getReceivePhone());
         order.setOrderStatus(OrderStatus.WAITING);
         order.setCreateAt(LocalDateTime.now());
-        order.setMember(memberRepository.findByMemberId(userDetails.getId()));
+        order.setMember(memberRepository.findByMemberId(userDetails.getId()).orElseThrow(()-> new MemberException("Member not found!")));
 
         orderRepository.save(order);
         order.setTotalPrice(BigDecimal.valueOf(1));
@@ -65,11 +67,12 @@ public class OrderServiceImpl implements OrderService {
         for (CheckoutRequest request : checkoutRequest) {
             ShoppingCart cart = cartRepository.findById(request.getShoppingCartId())
                     .orElseThrow(() -> CartException.notFound("Cannot found cart with that id!"));
-            if(!Objects.equals(cart.getMember().getMemberId(), userDetails.getId())) {
+            if (!Objects.equals(cart.getMember().getMemberId(), userDetails.getId())) {
                 throw CartException.notFound("Cannot found cart with that id!");
             }
 
-            Product product = productRepository.findByProductId(cart.getProduct().getProductId());
+            Product product = productRepository.findByProductId(cart.getProduct().getProductId())
+                    .orElseThrow(() -> new ProductException("Product not found!"));
 
             OrderDetail orderDetail = new OrderDetail();
             if (request.getProductQuantity().equals(cart.getProductQuantity()))
@@ -83,11 +86,11 @@ public class OrderServiceImpl implements OrderService {
 
             order.setTotalPrice(product.getUnitPrice()
                     .multiply(BigDecimal.valueOf(request.getProductQuantity()))
-                    .multiply(BigDecimal.valueOf(1 - (double) product.getDiscount()/100))
+                    .multiply(BigDecimal.valueOf(1 - (double) product.getDiscount() / 100))
                     .add(order.getTotalPrice()));
 
             int newQuantity = cart.getProductQuantity() - orderDetail.getProductQuantity();
-            if(newQuantity <= 0) {
+            if (newQuantity <= 0) {
                 cartRepository.delete(cart);
             } else {
                 cart.setProductQuantity(newQuantity);
@@ -119,38 +122,40 @@ public class OrderServiceImpl implements OrderService {
     }
 
     public List<OrderDetailResponse> getProductsInOrder(String serialNumber) {
-        Order order = orderRepository.findFirstBySerialNumber(serialNumber);
+        Order order = orderRepository.findFirstBySerialNumber(serialNumber)
+                .orElseThrow(() -> new OrderException("order not found!"));
         checkValidUser(order.getMember().getMemberId());
         List<OrderDetail> orderDetailList = orderDetailRepository.findAllByOrder(order);
         return orderDetailList.stream()
-            .map(orderDetail -> {
-                OrderDetailResponse response = new OrderDetailResponse();
-                response.setProductQuantity(orderDetail.getProductQuantity());
-                Product product = productRepository.findByProductId(orderDetail.getProduct().getProductId());
-                response.setProductName(product.getProductName());
-                response.setProductCategory(product.getCategory().getCategoryName());
-                response.setProductDescription(product.getDescription());
-                response.setProductDiscount(product.getDiscount());
-                response.setProductPrice(product.getUnitPrice());
-                response.setProductImageUrl(product.getImageUrl());
-                response.setOrderDetailStatus(orderDetail.getOrderDetailStatus());
-                return response;
-            }).toList();
+                .map(orderDetail -> {
+                    OrderDetailResponse response = new OrderDetailResponse();
+                    response.setProductQuantity(orderDetail.getProductQuantity());
+                    Product product = productRepository.findByProductId(orderDetail.getProduct().getProductId())
+                            .orElseThrow(() -> new ProductException("Product not found!"));
+                    response.setProductName(product.getProductName());
+                    response.setProductCategory(product.getCategory().getCategoryName());
+                    response.setProductDescription(product.getDescription());
+                    response.setProductDiscount(product.getDiscount());
+                    response.setProductPrice(product.getUnitPrice());
+                    response.setProductImageUrl(product.getImageUrl());
+                    response.setOrderDetailStatus(orderDetail.getOrderDetailStatus());
+                    return response;
+                }).toList();
     }
 
     @Override
     @Transactional
     public OrderResponse confirmOrder(String sku) {
-        Order order = orderRepository.findFirstBySerialNumber(sku);
-
-        if(order == null) {
+        Order order = orderRepository.findFirstBySerialNumber(sku)
+                .orElseThrow(() -> new OrderException("Order not found!"));
+        if (order == null) {
             throw OrderException.notFound("Cannot find order with that sku!");
         }
 
         checkValidUser(order.getMember().getMemberId());
-        if(order.getOrderStatus() == OrderStatus.DELIVERY) {
+        if (order.getOrderStatus() == OrderStatus.DELIVERY) {
             List<OrderDetail> orderDetailList = orderDetailRepository.findAllByOrder(order);
-            for(OrderDetail orderDetail: orderDetailList) {
+            for (OrderDetail orderDetail : orderDetailList) {
                 orderDetail.setOrderDetailStatus(OrderStatus.SUCCESS);
                 orderDetailRepository.save(orderDetail);
             }
@@ -165,15 +170,16 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse cancelOrder(String sku) {
-        Order order = orderRepository.findFirstBySerialNumber(sku);
-        if(order == null) {
+        Order order = orderRepository.findFirstBySerialNumber(sku)
+                .orElseThrow(() -> new OrderException("Order not found!"));
+        if (order == null) {
             throw OrderException.notFound("Cannot find order of this sku");
         }
 
         checkValidUser(order.getMember().getMemberId());
-        if(order.getOrderStatus() == OrderStatus.WAITING) {
+        if (order.getOrderStatus() == OrderStatus.WAITING) {
             List<OrderDetail> orderDetailList = orderDetailRepository.findAllByOrder(order);
-            for(OrderDetail orderDetail: orderDetailList) {
+            for (OrderDetail orderDetail : orderDetailList) {
                 orderDetail.setOrderDetailStatus(OrderStatus.CANCEL);
                 orderDetailRepository.save(orderDetail);
 
@@ -216,6 +222,7 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
     }
+
     @Override
     public List<OrderResponse> getCancelOrderHistory() {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -246,7 +253,7 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal result = BigDecimal.valueOf(0);
 
         List<Order> orderList = orderRepository.findAllByCreateAtBetweenAndMemberMemberIdAndOrderStatus(firstDay, lastDay, userDetails.getId(), OrderStatus.CONFIRM);
-        for(Order order:orderList) {
+        for (Order order : orderList) {
             result = result.add(order.getTotalPrice());
         }
         return result;
@@ -255,7 +262,7 @@ public class OrderServiceImpl implements OrderService {
 
     public void checkValidUser(String memberId) {
         UserDetailImpl userDetails = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if(!Objects.equals(memberId, userDetails.getId())) {
+        if (!Objects.equals(memberId, userDetails.getId())) {
             throw OrderException.notFound("Cannot find this order in your account, please retry");
         }
     }

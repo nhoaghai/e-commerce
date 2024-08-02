@@ -8,6 +8,7 @@ import com.ecommerce.domain.member.exception.AddressException;
 import com.ecommerce.domain.member.model.Address;
 import com.ecommerce.domain.member.repository.AddressRepository;
 import com.ecommerce.domain.member.service.AddressService;
+import com.ecommerce.domain.security.exception.MemberException;
 import com.ecommerce.domain.security.model.Member;
 import com.ecommerce.domain.security.repository.MemberRepository;
 import com.ecommerce.domain.security.serviceImpl.jwtService.UserDetailImpl;
@@ -53,7 +54,7 @@ public class AddressServiceImpl implements AddressService {
         address.setFullAddress(addressRequest.getFullAddress());
         address.setReceiveName(addressRequest.getReceiveName());
         address.setPhoneNumber(addressRequest.getPhoneNumber());
-        address.setMember(memberRepository.findByMemberId(memberDetail.getId()));
+        address.setMember(memberRepository.findByMemberId(memberDetail.getId()).orElseThrow(()-> new MemberException("Member not found!")));
         addressRepository.save(address);
         return MessageResponse.builder()
                 .httpStatus(HttpStatus.OK)
@@ -64,8 +65,9 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public List<AddressResponse> changeAddress(AddressRequest addressRequest, Long addressId) {
         UserDetailImpl memberDetail = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Member member = memberRepository.findByMemberId(memberDetail.getId());
-        Address address = addressRepository.findByMemberMemberIdAndAddressId(memberDetail.getId(), addressId);
+        Member member = memberRepository.findByMemberId(memberDetail.getId()).orElseThrow(()-> new MemberException("Member not found!")); // optional
+        Address address = addressRepository.findByMemberMemberIdAndAddressId(memberDetail.getId(), addressId)
+                .orElseThrow(()-> new AddressException("Address not found!"));
         if (address == null) {
             throw new AddressException("No product found matching the search criteria");
         } else {
@@ -83,7 +85,8 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public AddressResponse findAddressById(Long addressId) {
         UserDetailImpl memberDetail = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Address address = addressRepository.findByMemberMemberIdAndAddressId(memberDetail.getId(), addressId);
+        Address address = addressRepository.findByMemberMemberIdAndAddressId(memberDetail.getId(), addressId)
+                .orElseThrow(()-> new AddressException("Address not found!"));
         if (address == null) {
             throw new AddressException("No product found matching the search criteria");
         } else {
@@ -94,7 +97,8 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public MessageResponse deleteAddressById(Long addressId) {
         UserDetailImpl memberDetail = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Address address = addressRepository.findByMemberMemberIdAndAddressId(memberDetail.getId(), addressId);
+        Address address = addressRepository.findByMemberMemberIdAndAddressId(memberDetail.getId(), addressId)
+                .orElseThrow(()-> new AddressException("Address not found!"));
         if (address == null) {
             throw new AddressException("No product found matching the search criteria");
         } else {

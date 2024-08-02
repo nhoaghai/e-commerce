@@ -8,12 +8,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AddressRepository extends JpaRepository<Address, Long> {
     List<Address> findByMemberMemberId(String memberId);
 
-    Address findByMemberMemberIdAndAddressId(String memberId, Long addressId);
+    Optional<Address> findByMemberMemberIdAndAddressId(String memberId, Long addressId);
 
     @Query(value = "select a from Address a where a.member.memberId =?1")
     Page<Address> findAllByMemberMemberId(String memberId, Pageable pageable);

@@ -51,7 +51,7 @@ public class CategoryServiceImpl implements CategoryService {
     public List<CategoryResponse> getAllCategoryByNameOrDes(String keyword) {
         List<Category> categories = categoryRepository.findAllByCategoryNameContainingOrDescriptionContaining(keyword, keyword);
 
-        if (categories.isEmpty()){
+        if (categories.isEmpty()) {
             throw CategoryException.notFound("No category found matching the search criteria");
         } else {
             return categories.stream()
@@ -62,8 +62,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryResponse findCategoryById(Long categoryId) {
-        Category category = categoryRepository.findByCategoryId(categoryId);
-        if (category == null){
+        Category category = categoryRepository.findByCategoryId(categoryId)
+                .orElseThrow(() -> new CategoryException("Category not found!"));
+        if (category == null) {
             throw CategoryException.notFound("Could not found category with id");
         } else {
             return modelMapper.map(category, CategoryResponse.class);
@@ -92,8 +93,9 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<CategoryResponse> updateCategory(List<CategoryRequest> categoryRequest) {
         List<CategoryResponse> responses = new ArrayList<>();
-        for(CategoryRequest request: categoryRequest) {
-            Category category = categoryRepository.findByCategoryId(request.getCategoryId());
+        for (CategoryRequest request : categoryRequest) {
+            Category category = categoryRepository.findByCategoryId(request.getCategoryId())
+                    .orElseThrow(() -> new CategoryException("Category not found!"));
             if (category == null) {
                 throw new DomainException("This category does not exist");
             }
@@ -107,12 +109,13 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     public CategoryResponse deleteCategory(CategoryRequest categoryRequest) {
-        Category category = categoryRepository.findByCategoryId(categoryRequest.getCategoryId());
-        if(category == null) {
+        Category category = categoryRepository.findByCategoryId(categoryRequest.getCategoryId())
+                .orElseThrow(() -> new CategoryException("Category not found!"));
+        if (category == null) {
             throw new CategoryException("This category does not exist");
         }
         List<Product> products = productRepository.findAllByCategoryCategoryId(category.getCategoryId());
-        if(!products.isEmpty()) {
+        if (!products.isEmpty()) {
             throw new CategoryException("There are products in this category");
         }
         categoryRepository.delete(category);

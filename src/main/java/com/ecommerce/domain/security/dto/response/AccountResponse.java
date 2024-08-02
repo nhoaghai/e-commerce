@@ -23,6 +23,5 @@ public class AccountResponse {
     private String avatarUrl;
     private boolean isActive;
     private List<String> address;
-
     private Set<Role> roles;
 }

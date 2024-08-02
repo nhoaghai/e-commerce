@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
@@ -16,7 +17,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findAllByCategoryCategoryId(Long categoryId);
 
-    Product findByProductId(Long productId);
+    Optional<Product> findByProductId(Long productId);
 
     @Query("select p from Product p where p.sku= ?1")
     Product findByProductSku(String sku);
@@ -27,5 +28,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findAllBySeller(Seller seller);
 
-    Product findBySellerSellerIdAndProductId(String memberId, Long productId);
+    Optional<Product> findBySellerSellerIdAndProductId(String memberId, Long productId);
 }
