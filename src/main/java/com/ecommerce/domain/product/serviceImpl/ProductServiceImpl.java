@@ -154,24 +154,4 @@ public class ProductServiceImpl implements ProductService {
         }
         return shopProductResponses;
     }
-
-    @Override
-    public MessageResponse addNewProduct(ProductRequest productRequest) {
-        return null;
-    }
-
-    @Override
-    public MessageResponse updateProduct(ProductRequest productRequest) {
-        return null;
-    }
-
-    @Override
-    public MessageResponse deleteByProductId(Long productId) {
-        return null;
-    }
-
-    @Override
-    public List<ProductResponse> findAllBySellerId(String sellerId) {
-        return null;
-    }
 }

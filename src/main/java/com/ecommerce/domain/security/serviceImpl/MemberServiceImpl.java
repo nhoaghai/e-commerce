@@ -31,6 +31,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -218,10 +219,10 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public MessageResponse changeAvatar(ChangeAvatarRequest changeAvatarRequest) {
+    public MessageResponse changeAvatar(MultipartFile changeAvatarRequest) {
         UserDetailImpl memberDetail = (UserDetailImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Member member = memberRepository.findByMemberId(memberDetail.getId()).orElseThrow(()-> new MemberException("Member not found!"));
-        member.setAvatarUrl(uploadService.uploadFile(changeAvatarRequest.getAvatarUrl()));
+        member.setAvatarUrl(uploadService.uploadFile(changeAvatarRequest));
         member.setUpdateAt(LocalDateTime.now());
         memberRepository.save(member);
         return MessageResponse.builder()

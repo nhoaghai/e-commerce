@@ -11,8 +11,10 @@ import com.ecommerce.domain.member.dto.response.AddressResponse;
 import com.ecommerce.domain.security.serviceImpl.MemberServiceImpl;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -34,8 +36,8 @@ public class AccountController {
         return ResponseEntity.ok(memberService.updateProfile(accountRequest));
     }
 
-    @PutMapping("/changeAvatar")
-    public ResponseEntity<MessageResponse> updateAvatar(@ModelAttribute ChangeAvatarRequest changeAvatarRequest) {
+    @PutMapping(path = "/changeAvatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MessageResponse> updateAvatar(@RequestPart MultipartFile changeAvatarRequest) {
         return ResponseEntity.ok(memberService.changeAvatar(changeAvatarRequest));
     }
 

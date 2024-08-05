@@ -12,6 +12,7 @@ import com.ecommerce.domain.security.model.Member;
 import com.ecommerce.domain.security.model.RoleName;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -33,7 +34,7 @@ public interface MemberService {
 
     AccountResponse updateProfile(AccountRequest accountRequest);
 
-    MessageResponse changeAvatar(ChangeAvatarRequest changeAvatarRequest);
+    MessageResponse changeAvatar(MultipartFile changeAvatarRequest);
 
     MessageResponse toggleMemberStatusById(String memberId);
 

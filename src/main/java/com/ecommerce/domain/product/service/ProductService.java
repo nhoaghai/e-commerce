@@ -21,12 +21,4 @@ public interface ProductService {
     ProductResponse findByProductSku(String sku);
 
     List<ShopProductResponse> findAllShopProduct(String shopName);
-
-    MessageResponse addNewProduct(ProductRequest productRequest);
-
-    MessageResponse updateProduct(ProductRequest productRequest);
-
-    MessageResponse deleteByProductId(Long productId);
-
-    List<ProductResponse> findAllBySellerId(String sellerId);
 }
